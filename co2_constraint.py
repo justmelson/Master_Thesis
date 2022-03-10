@@ -38,10 +38,10 @@ learning_scenario = "nom_learning"
 Renewable_balancing = True
 
 # CO2 budget for 2050 global warming goals
-co2_until_2050 = 1e9 # 100 million tCO2 ,10000000000 # 10 gigaton CO2
+co2_until_2050 = 1e10  # 10 gigaton CO2
 
 # Greenfield scenario 
-Greenfield = False
+Greenfield = True
 
 
 # legend on/off when plotting
@@ -102,8 +102,8 @@ demand = pd.DataFrame(columns= ["demand"])
 
 #%% Technology data
 parameters.loc["capacity factor"] = [0.52,0.44,0.21,0.63,0.63,0.83,0.85]
-parameters.loc["current capital cost"] = [annuity(costs.at['onwind','lifetime'],r)*costs.at['onwind','investment']*(1+costs.at['onwind','FOM']),
-                                     annuity(costs.at['offwind','lifetime'],r)*costs.at['offwind','investment']*(1+costs.at['offwind','FOM']),
+parameters.loc["current capital cost"] = [annuity(costs.at['offwind','lifetime'],r)*costs.at['offwind','investment']*(1+costs.at['offwind','FOM']),
+                                     annuity(costs.at['onwind','lifetime'],r)*costs.at['onwind','investment']*(1+costs.at['onwind','FOM']),
                                      annuity(costs.at['solar','lifetime'],r)*costs.at['solar','investment']*(1+costs.at['solar','FOM']),
                                      annuity(costs.at['CCGT','lifetime'],r)*costs.at['CCGT','investment']*(1+costs.at['CCGT','FOM']),
                                      annuity(costs.at['OCGT','lifetime'],r)*costs.at['OCGT','investment']*(1+costs.at['OCGT','FOM']),
@@ -241,7 +241,7 @@ if "no_co2" in scenario:
     print("No CO2 budget")
 
 else:
-    co2_budget = 1e9#/MWh_total
+    co2_budget = co2_until_2050#/MWh_total
     print("CO2 budget of "+ str(co2_budget) + " tCO2")
 
 
@@ -305,9 +305,6 @@ def co2_constraint(model,tech,year):
     return co2_budget >= sum((model.generators_dispatch[tech,year] * 8760 * 1000 * parameters.at["specific emissions",tech]) for tech in techs for year in years)
 model.co2_constraint = Constraint(techs,years,rule=co2_constraint)
 
-# def co2_constraint(model):
-#     return co2_budget*MWh_total >= sum(model.generators_dispatch[tech,year]*parameters.at["specific emissions",tech] for tech in techs for year in years)
-# model.co2_constraint = Constraint(rule=co2_constraint)
 
 # def inverter_constraint(model,tech,year):
 #     return model.storage_dispatch["battery_store",year] == model.storage_dispatch["battery_inverter",year]

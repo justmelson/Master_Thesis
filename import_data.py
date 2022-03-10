@@ -64,8 +64,8 @@ demand = pd.DataFrame(columns= ["demand"])
 
 #%% Technology data
 parameters.loc["capacity factor"] = [0.52,0.44,0.21,0.63,0.63,0.83,0.85]
-parameters.loc["current capital cost"] = [annuity(costs.at['onwind','lifetime'],r)*costs.at['onwind','investment']*(1+costs.at['onwind','FOM']),
-                                     annuity(costs.at['offwind','lifetime'],r)*costs.at['offwind','investment']*(1+costs.at['offwind','FOM']),
+parameters.loc["current capital cost"] = [annuity(costs.at['offwind','lifetime'],r)*costs.at['offwind','investment']*(1+costs.at['offwind','FOM']),
+                                     annuity(costs.at['onwind','lifetime'],r)*costs.at['onwind','investment']*(1+costs.at['onwind','FOM']),
                                      annuity(costs.at['solar','lifetime'],r)*costs.at['solar','investment']*(1+costs.at['solar','FOM']),
                                      annuity(costs.at['CCGT','lifetime'],r)*costs.at['CCGT','investment']*(1+costs.at['CCGT','FOM']),
                                      annuity(costs.at['OCGT','lifetime'],r)*costs.at['OCGT','investment']*(1+costs.at['OCGT','FOM']),
@@ -90,7 +90,7 @@ parameters.loc["marginal cost"] = [0,
                                    fuel_cost_gas/costs.at['CCGT','efficiency'],
                                    fuel_cost_gas/costs.at['OCGT','efficiency'],
                                    costs.at['coal','fuel']/costs.at['coal','efficiency'],
-                                   26.15] # from lazard #EUR/MWhel
+                                   costs.at['nuclear','fuel']/costs.at['nuclear','efficiency']] # from lazard #EUR/MWhel
 parameters.loc["specific emissions"] = [0.,0.,0.,0.374,0.588,0.76,0] #tcO2/MWhel
 parameters.loc["lifetime"] = [27,27,32.5,25,25,40,40]  #years
 parameters.loc["existing age"] = [10,10,5,14,14,20,15] # [0,0,0,0,0,0] years
@@ -126,11 +126,55 @@ store_param.loc["current LCOE"] = store_param.loc["current capital cost"]/8760 +
 
 store_param.round(3)
 
+#%% Capacity factors 
+
+ct = "DNK"
+df_solar = pd.read_csv('data/pv_optimal.csv',sep=';',index_col=0)
+df_onwind = pd.read_csv('data/onshore_wind_1979-2017.csv',sep=';',index_col=0)
+df_offwind = pd.read_csv('data/offshore_wind_1979-2017.csv',sep=';',index_col=0)
+
+year = pd.date_range('1979-01-01T00:00Z','1979-01-14T23:00Z',freq='H')
+one_year = pd.date_range('2025-01-01T00:00Z','2025-01-14T23:00Z',freq='H')
+
+
+
+CF_solar_one = df_solar[ct][[hour.strftime("%Y-%m-%dT%H:%M:%SZ") for hour in year]]
+CF_solar_one = CF_solar_one.reset_index()
+# CF_solar_one = CF_solar_one.set_index(one_year)
+CF_solar_one = CF_solar_one.drop(columns=["utc_time"])
+
+CF_onwind_one = df_onwind[ct][[hour.strftime("%Y-%m-%dT%H:%M:%SZ") for hour in year]]
+CF_onwind_one = CF_onwind_one.reset_index()
+# CF_onwind_one = CF_onwind_one.set_index(one_year)
+CF_onwind_one = CF_onwind_one.drop(columns=["utc_time"])
+
+CF_offwind_one = df_offwind[ct][[hour.strftime("%Y-%m-%dT%H:%M:%SZ") for hour in year]]
+CF_offwind_one = CF_offwind_one.reset_index()
+# CF_offwind_one = CF_offwind_one.set_index(one_year)
+CF_offwind_one = CF_offwind_one.drop(columns=["utc_time"])
+
+#%% Demand
+date_demand = pd.date_range('2015-01-01T00:00Z','2015-01-14T23:00Z',freq='H')
+weekdemand = pd.date_range('2025-01-01T00:00:00Z','2025-01-14T23:00:00Z',freq='H')
+
+df_elec = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
+df_elec = df_elec.sum(axis=1)
+df_elec = df_elec[[hour.strftime("%Y-%m-%dT%H:%M:%SZ") for hour in date_demand]]
+
+
+df_elec.index = pd.to_datetime(df_elec.index) #change index to datatime
+df_elec = df_elec.reset_index()
+df_elec = df_elec.set_index(weekdemand)
+df_elec = df_elec.drop(columns=["utc_time"])
+
 #%% Saving dataframes and lists
 
 parameters.to_pickle("parameters.pkl")
 store_param.to_pickle("store_param.pkl")
-
+CF_solar_one.to_pickle("CF_solar_one.pkl")
+CF_onwind_one.to_pickle("CF_onwind_one.pkl")
+CF_offwind_one.to_pickle("CF_offwind_one.pkl")
+df_elec.to_pickle("df_elec.pkl")
 
 techs_file = "techs.pkl"
 fossil_techs_file = "fossil_techs.pkl"
