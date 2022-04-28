@@ -47,7 +47,7 @@ lgnd = True
 
 r = 0.07 # discount rate
 
-hours = list(range(48))
+hours = list(range(24))
 
 
 parameters = pd.read_pickle("parameters.pkl")
@@ -193,18 +193,6 @@ def balance_constraint(model,hour):
 model.balance_constraint = Constraint(hours, rule=balance_constraint)
 
 
-# def storebalancePV_constraint(model,year):
-#     return model.storage_dispatch["battery_store",year] == model.generators_dispatch["solar_PV",year]*0.3
-# model.storebalancePV_constraint = Constraint(years, rule=storebalancePV_constraint)
-
-# def storebalanceWind_constraint(model,tech,year):
-#     return model.storage_dispatch["hydrogen_storage",year] == sum(model.generators_dispatch[tech,year] for tech in wind)*0.3
-# model.storebalanceWind_constraint = Constraint(renewables,years, rule=storebalanceWind_constraint)
-
-# def storage_constraint(model,tech,year):
-#     return model.storage_dispatch[tech,year] <= model.storage[tech,year]
-# model.storage_constraint = Constraint(storage, years, rule=storage_constraint)
-
 def solar_constraint(model,hour):
     return model.generators_dispatch["solar_PV",hour] <= model.generators["solar_PV",hour]*CF_solar_one.at[hour,"DNK"]
 model.solar_constraint = Constraint(hours, rule=solar_constraint)
@@ -227,17 +215,7 @@ def co2_constraint(model,tech,hour):
     return co2_budget >= sum((model.generators_dispatch[tech,hour] * 1000 * parameters.at["specific emissions",tech]) for tech in techs for hour in hours)
 model.co2_constraint = Constraint(techs,hours,rule=co2_constraint)
 
-# def inverter_constraint(model,tech,year):
-#     return model.storage_dispatch["battery_store",year] == model.storage_dispatch["battery_inverter",year]
-# model.inverter_constraint = Constraint(storage, years, rule=inverter_constraint)
 
-# def fuelcell_constraint(model,tech,year):
-#     return model.storage_dispatch["hydrogen_storage",year] == model.storage_dispatch["fuel_cell",year]
-# model.fuelcell_constraint = Constraint(storage, years, rule=fuelcell_constraint)
-
-# def electrolysis_constraint(model,tech,year):
-#     return model.storage_dispatch["hydrogen_storage",year] == model.storage_dispatch["electrolysis",year]
-# model.electrolysis_constraint = Constraint(storage, years, rule=electrolysis_constraint)
 
 def build_years(model,tech,hour):
     if hour < hours[0] + parameters.at["lifetime",tech] - parameters.at["existing age",tech]:
@@ -248,14 +226,6 @@ def build_years(model,tech,hour):
     return model.generators[tech,hour] == constant + sum(model.generators_built[tech,hourb] for hourb in hours if ((hour>= hourb) and (hour < hourb + parameters.at["lifetime",tech])))
 model.build_years = Constraint(techs, hours, rule=build_years)
 
-# def build_years_storage(model,tech,year):
-#     if year < years[0] + store_param.at["lifetime",tech] - store_param.at["existing age",tech]:
-#         constant = store_param.at["existing capacity",tech]
-#     else:
-#         constant = 0.
-    
-#     return model.storage[tech,year] == constant + sum(model.storage_built[tech,yearb] for yearb in years if ((year>= yearb) and (year < yearb + store_param.at["lifetime",tech])))
-# model.build_years_storage = Constraint(storage, years, rule=build_years_storage)
 
 def fixed_cost_constraint(model,tech,hour):
     if parameters.at["learning parameter",tech] == 0:
@@ -264,20 +234,6 @@ def fixed_cost_constraint(model,tech,hour):
         return model.fixed_costs[tech,hour] == parameters.at["current capital cost",tech] * (1+sum(model.generators_built[tech,hourt] for hourt in hours if hourt < hour))**(-parameters.at["learning parameter",tech])
         # return model.fixed_costs[tech,year] == parameters.at["base cost",tech] + (parameters.at["current capital cost",tech]-parameters.at["base cost",tech])*(1+sum(model.generators_built[tech,yeart] for yeart in years if yeart < year))**(-parameters.at["learning parameter",tech])
 model.fixed_cost_constraint = Constraint(techs, hours, rule=fixed_cost_constraint)
-
-# def fixed_cost_constraint_storage(model,tech,year):
-#     if store_param.at["learning parameter",tech] == 0:
-#         return model.fixed_costs_storage[tech,year] == store_param.at["current capital cost",tech]
-#     else:
-#         return model.fixed_costs_storage[tech,year] == store_param.at["current capital cost",tech] * (1+sum(model.storage_built[tech,yeart] for yeart in years if yeart < year))**(-store_param.at["learning parameter",tech])
-#         # return model.fixed_costs_storage[tech,year] == store_param.at["potential capital cost",tech] + (store_param.at["current capital cost",tech]-store_param.at["potential capital cost",tech])*(1+sum(model.storage[tech,yeart] for yeart in years if yeart < year))**(-store_param.at["learning parameter",tech])
-# model.fixed_cost_constraint_storage = Constraint(storage, years, rule=fixed_cost_constraint_storage)
-
-# def renewable_constraint(model,tech,techren,year):
-#     if value(sum(model.generators_dispatch[techren,year] for techren in renewables)) > value(sum(model.generators_dispatch[tech,year] for tech in techs)*0.7):
-#         return model.storage_dispatch["battery_store",year] == sum(model.generators_dispatch[techren,year] for tech in renewables)*0.3
-        
-# model.renewable_constraint = Constraint(techs,renewables, years, rule=renewable_constraint)
 
 #%% Solving model
 

@@ -25,8 +25,8 @@ plt.style.use("seaborn")
 
 #%% Scenarios and settings
 
-# scenario = "no_co2-no_learning"
-scenario = "co2-0p2-no_learning"
+scenario = "no_co2-no_learning"
+# scenario = "co2-0p2-no_learning"
 # scenario = "co2-0p2-learning"
 # scenario = "no_co2-learning"
 
@@ -47,7 +47,7 @@ Greenfield = True
 # legend on/off when plotting
 lgnd = True
 
-r = 0.07 # discount rate
+r = 0.0 # discount rate
 
 
 #%%
@@ -386,6 +386,12 @@ for year in years:
     for tech in techs:
         dispatch.at[year,tech] = model.generators_dispatch[tech,year].value*8760
 
+for year in years:
+        for tech in techs:
+            if dispatch.at[year,tech] <= 0:
+                dispatch.at[year,tech] = 0
+            
+
 # for year in years:
 # #     for tech in storage:
 #     dispatch.at[year,"battery_store"] = model.storage_dispatch["battery_store", year].value*8760
@@ -405,6 +411,9 @@ capacities = pd.DataFrame(0.,index=years,columns=techs)
 for year in years:
     for tech in techs:
         capacities.at[year,tech] = model.generators[tech,year].value
+        if capacities.at[year,tech] <= 0:
+            capacities.at[year,tech] = 0
+        
     # capacities.at[year,"battery_store"] = model.storage["battery_store", year].value
     # capacities.at[year,"hydrogen_storage"] = model.storage["battery_store", year].value
 
@@ -424,7 +433,9 @@ build_years = pd.DataFrame(0.,index=years,columns=techs) # +storage
 for year in years:
     for tech in techs:
         build_years.at[year,tech] = model.generators_built[tech,year].value
-
+        if build_years.at[year,tech] <= 0:
+            build_years.at[year,tech] = 0
+        
 # for year in years:
 #     for tech in storage:
 #         build_years.at[year,tech] = model.storage_built[tech, year].value
@@ -461,20 +472,20 @@ ax.legend().set_visible(lgnd)
 fig.savefig("CO2_val_figures/{}-lcoe.png".format(filename),transparent=True)
 
 
-# emissions = pd.DataFrame(0.,index=years,columns=techs)
-# for year in years:
-#     for tech in techs:
-#         emissions.at[year,tech] = model.generators_dispatch[tech,year].value*8760* 1000 * parameters.at["specific emissions",tech]
+emissions = pd.DataFrame(0.,index=years,columns=techs)
+for year in years:
+    for tech in techs:
+        emissions.at[year,tech] = model.generators_dispatch[tech,year].value*8760* 1000 * parameters.at["specific emissions",tech]
 
-# fig, ax = plt.subplots()
-# fig.set_dpi(2000)
-# emissions.plot(ax=ax,linewidth=3,cmap=colormap)
-# ax.set_xlabel("year")
-# ax.set_ylabel("CO2 [t]")
-# # ax.set_yscale("log")
-# # ax.set_ylim([0,40])
-# ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
-# ax.legend().set_visible(lgnd)
+fig, ax = plt.subplots(figsize = [12, 4], dpi = 400, nrows = 1, ncols = 1)
+emissions.plot(ax=ax,linewidth=3,color=colors)
+ax.set_xlabel("year")
+ax.set_ylabel("CO2 [t]")
+
+# ax.set_yscale("log")
+# ax.set_ylim([0,40])
+ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
+ax.legend().set_visible(lgnd)
 # fig.savefig("Figures_LR_test/{}-emissions.png".format(filename),transparent=True)
 
 #%%
