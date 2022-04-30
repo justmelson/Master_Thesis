@@ -101,7 +101,7 @@ def plotTSoffwind3h(data, periodlength, vmin, vmax):
     
 #%% Manual picking of time series
 ct = "DEU" 
-res = 1
+res = 3
 
 
 cf_solar_raw = pd.read_excel('data/capacityfactor_twoweeks.xlsx','pv',index_col=0)
@@ -165,7 +165,7 @@ cf_onshore_rawagg = tsam.TimeSeriesAggregation(cf_onshore_raw_ct, noTypicalPerio
                                         clusterMethod = 'k_means', 
                                         extremePeriodMethod = 'new_cluster_center',
                                         addPeakMin = [ct], addPeakMax = [ct] )
-typPeriods_onshore = cf_onshore_rawagg.createTypicalPeriods()
+typPeriods_onshore = cf_onshore_rawagg.crleateTypicalPeriods()
 print(cf_onshore_rawagg.accuracyIndicators())
 
 

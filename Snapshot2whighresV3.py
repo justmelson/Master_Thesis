@@ -56,7 +56,7 @@ lgnd = True
 
 r = 0.01 # discount rate
 
-hours = list(range(64))
+hours = list(range(32))
 dty = 365/(len(hours)/8) # Number of days modeled op to 365 days
 
 
@@ -64,7 +64,7 @@ parameters  = pd.read_pickle("parameters.pkl")
 store_param = pd.read_pickle("store_param.pkl")
 CC_param    = pd.read_pickle("CC_param.pkl")
 
-a_file = open("demand_elec.pkl", "rb")
+a_file = open("demand_elec5y.pkl", "rb")
 demand = pickle.load(a_file)
 
 
@@ -78,11 +78,11 @@ demand = pickle.load(a_file)
 # Cf_offshore = pd.read_pickle("Cf_offshore.pkl")
 
 
-Cf_solar      = pd.read_pickle("cf_solar3h.pkl")
-Cf_onshore    = pd.read_pickle("cf_onshore3h.pkl")
-Cf_offshore   = pd.read_pickle("cf_offshore3h.pkl")
-demand2w3h      = pd.read_pickle("demand2w3h.pkl")
-demand2w3h.reset_index()
+Cf_solar      = pd.read_pickle("cf_solar3h4d.pkl")
+Cf_onshore    = pd.read_pickle("cf_onshore3h4d.pkl")
+Cf_offshore   = pd.read_pickle("cf_offshore3h4d.pkl")
+# demand6d3h      = pd.read_pickle("demand6d3h.pkl")
+# demand6d3h.reset_index()
 
 
 
@@ -138,7 +138,9 @@ for tech in techs:
 #Currently installed capacities in GW is used to assume current demand
 
 # Hourly demand
-years = [2020,2026,2032,2038,2044,2050]
+# years = [2020,2026,2032,2038,2044,2050]
+years = [2020,2025,2030,2035,2040,2045,2050]
+
 # years = [2020,2023,2026,2029,2032,2035,2038,2041,2044,2047,2050]
 
 interval = years[1]-years[0]
@@ -305,9 +307,9 @@ def build_years_storage(model,tech,year):
     return model.storage[tech,year] == constant + sum(model.storage_built[tech,yearb] for yearb in years if ((year>= yearb) and (year < yearb + store_param.at["lifetime",tech]))) #GW
 model.build_years_storage = Constraint(storage_techs,years, rule=build_years_storage)
 
-def inverter_constraint(model,storage_techs,year):
-    return model.storage["battery_store",year] <= model.storage['battery_inverter',year]
-model.inverter_constraint = Constraint(storage_techs,years, rule=inverter_constraint)
+# def inverter_constraint(model,storage_techs,year):
+#     return model.storage["battery_store",year] <= model.storage['battery_inverter',year]
+# model.inverter_constraint = Constraint(storage_techs,years, rule=inverter_constraint)
 
 def storage_bounding_constraint(model,tech,year):
     return sum(model.storage[tech,year] for tech in storage_techs) <= 1000

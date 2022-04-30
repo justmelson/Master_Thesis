@@ -140,7 +140,7 @@ CC_param.round(3)
 
 #%% Capacity factors 
 
-# ct = "DNK"
+# ct = "DEU"
 # df_solar = pd.read_csv('data/pv_optimal.csv',sep=';',index_col=0)
 # df_onwind = pd.read_csv('data/onshore_wind_1979-2017.csv',sep=';',index_col=0)
 # df_offwind = pd.read_csv('data/offshore_wind_1979-2017.csv',sep=';',index_col=0)
@@ -198,10 +198,37 @@ cf_onshore3h.to_pickle("cf_onshore3h.pkl")
 cf_offshore3h.to_pickle("cf_offshore3h.pkl")
 
 
-#%% Demand
-week_summer = pd.date_range('2015-06-19T00:00:00Z','2015-06-25T23:00:00Z',freq='H')
-week_winter = pd.date_range('2015-12-23T00:00:00Z','2015-12-29T23:00:00Z',freq='H')
+cf_solar_raw = pd.read_excel('data/capacityfactor_4days.xlsx','pv',index_col=0)
+cf_solar_raw = cf_solar_raw[ct]
+cf_solar = cf_solar_raw.to_numpy()
+cf_solar3h = np.mean(cf_solar.reshape(-1,res),axis=1)
+cf_solar3h = pd.DataFrame(cf_solar3h)
 
+cf_onshore_raw = pd.read_excel('data/capacityfactor_4days.xlsx','onshore',index_col=0)
+cf_onshore_raw = cf_onshore_raw[ct]
+cf_onshore = cf_onshore_raw.to_numpy()
+cf_onshore3h = np.mean(cf_onshore.reshape(-1,res),axis=1)
+cf_onshore3h = pd.DataFrame(cf_onshore3h)
+
+
+cf_offshore_raw = pd.read_excel('data/capacityfactor_4days.xlsx','offshore',index_col=0)
+cf_offshore_raw = cf_offshore_raw[ct]
+cf_offshore = cf_offshore_raw.to_numpy()
+cf_offshore3h = np.mean(cf_offshore.reshape(-1,res),axis=1)
+cf_offshore3h = pd.DataFrame(cf_offshore3h)
+
+
+cf_solar3h.to_pickle("cf_solar3h4d.pkl")
+cf_onshore3h.to_pickle("cf_onshore3h4d.pkl")
+cf_offshore3h.to_pickle("cf_offshore3h4d.pkl")
+
+
+#%% Demand
+week_summer = pd.date_range('2015-06-19T00:00:00Z','2015-06-21T23:00:00Z',freq='H')
+week_winter = pd.date_range('2015-12-23T00:00:00Z','2015-12-25T23:00:00Z',freq='H')
+
+# d3_summer   = pd.date_range('2015-06-19T00:00:00Z','2015-06-21T23:00:00Z',freq='H')
+# d3_winter   = pd.date_range('2015-12-23T00:00:00Z','2015-12-25T23:00:00Z',freq='H')
 # weekdemand = pd.date_range('2025-01-01T00:00:00Z','2025-01-14T23:00:00Z',freq='H')
 
 df_elec = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
@@ -262,7 +289,9 @@ CC_param.to_pickle("CC_param.pkl")
 # CF_onwind_one.to_pickle("CF_onwind_one.pkl")
 # CF_offwind_one.to_pickle("CF_offwind_one.pkl")
 df_elec.to_pickle("df_elec.pkl")
-demand2w3h.to_pickle("demand2w3h.pkl")
+# demand2w3h.to_pickle("demand2w3h.pkl")
+demand2w3h.to_pickle("demand6d3h.pkl")
+
 
 a_file = open("demand_elec.pkl", "wb")
 pickle.dump(demand_elec, a_file)

@@ -23,13 +23,15 @@ plt.style.use("seaborn")
 
 #%% Scenarios and settings
 
-# scenario = "no_co2-no_learning"
+scenario = "no_co2-no_learning"
 # scenario = "co2-0p2-no_learning"
 # scenario = "co2-0p2-learning"
-scenario = "no_co2-learning"
+# scenario = "no_co2-learning"
 
 learning_scenario = "high_learning"
 # learning_scenario = "low_learning"
+# learning_scenario = "nom_learning"
+
 
 # Do you want to include capacity factor?
 Renewable_balancing = True
@@ -44,7 +46,7 @@ Greenfield = True
 # legend on/off when plotting
 lgnd = True
 
-r = 0.07 # discount rate
+r = 0.01 # discount rate
 
 
 parameters = pd.read_pickle("parameters.pkl")
@@ -111,18 +113,24 @@ for year in years:
 
 
 if "no_learning" in scenario:
-    parameters.loc["learning rate"] = 0
-    store_param.loc["learning rate"] = 0
+    parameters.loc["learning rate"]     = 0
+    store_param.loc["learning rate"]    = 0
     print("No learning")
 else:
     if "high_learning" in learning_scenario:
-        parameters.loc["learning rate"] = [0.12,0.12,0.23,0.14,0.15,0.05,0.06] # [0.19,0.32,0.47,0.34,0.15,0.083]
-        store_param.loc["learning rate"] = [0.18,0.1,0.1,0.26,0.21]
+        parameters.loc["learning rate"]     = [0.12,0.12,0.23,0.14,0.15,0.05,0.06] # [0.19,0.32,0.47,0.34,0.15,0.083]
+        store_param.loc["learning rate"]    = [0.18,0.1,0.1,0.26,0.21]
         print("High learning rates")
-    else: #low learning
-        parameters.loc["learning rate"] = [0.05,0,0.1,0,0.15,0.06,0.0] # [0.05,0,0.1,-0.01,0.15,0.06,-0.06]
-        store_param.loc["learning rate"] = [0.08,0.1,0.1,0.18,0.15]
-        print("Low learning rates")
+    else: 
+        if "low_learning" in learning_scenario:
+            parameters.loc["learning rate"]     = [0.05,0,0.1,0,0.15,0.06,0.0] # [0.05,0,0.1,-0.01,0.15,0.06,-0.06]
+            store_param.loc["learning rate"]    = [0.08,0.1,0.1,0.18,0.15]
+            print("Low learning rates")
+        else:
+            # nom learning
+            parameters.loc["learning rate"]     = [0.12,0.12,0.23,0.14,0.15,0.083,0.0] # [0.05,0,0.1,-0.01,0.15,0.06,-0.06]
+            store_param.loc["learning rate"]    = [0.08,0.1,0.1,0.18,0.15]
+            print("Nominal learning rates")
 
 
 
@@ -260,7 +268,7 @@ model.fixed_cost_constraint = Constraint(techs, years, rule=fixed_cost_constrain
 #%% Solving model
 
 opt = SolverFactory('ipopt')
-results = opt.solve(model,suffixes=['dual'],keepfiles=False)
+results = opt.solve(model,suffixes=['dual'],keepfiles=False,tee=True)
 
 print("Total cost (in billion euro) =","%.2f"% model.objective())
 
@@ -285,6 +293,13 @@ for year in years:
     for tech in techs:
         dispatch.at[year,tech] = model.generators_dispatch[tech,year].value*8760
 
+
+for year in years:
+        for tech in techs:
+            if dispatch.at[year,tech] <= 0:
+                dispatch.at[year,tech] = 0
+
+            
 # for year in years:
 # #     for tech in storage:
 #     dispatch.at[year,"battery_store"] = model.storage_dispatch["battery_store", year].value*8760
@@ -306,6 +321,10 @@ for year in years:
         capacities.at[year,tech] = model.generators[tech,year].value
     # capacities.at[year,"battery_store"] = model.storage["battery_store", year].value
     # capacities.at[year,"hydrogen_storage"] = model.storage["battery_store", year].value
+for year in years:
+        for tech in techs:
+            if capacities.at[year,tech] <= 0:
+                capacities.at[year,tech] = 0
 
         
 fig, ax = plt.subplots()
@@ -323,10 +342,11 @@ build_years = pd.DataFrame(0.,index=years,columns=techs) # +storage
 for year in years:
     for tech in techs:
         build_years.at[year,tech] = model.generators_built[tech,year].value
+for year in years:
+        for tech in techs:
+            if build_years.at[year,tech] <= 0:
+                build_years.at[year,tech] = 0
 
-# for year in years:
-#     for tech in storage:
-#         build_years.at[year,tech] = model.storage_built[tech, year].value
 
 fig, ax = plt.subplots()
 fig.set_dpi((400))
