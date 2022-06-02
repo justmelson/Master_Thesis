@@ -1,8 +1,8 @@
 # Master_Thesis
  
-Nonlinear endogenoues learning model
+Nonlinear endogenoues learning model\\
 
-Run file "import_data.py" to import and create data files for the model
+Run file "import_data.py" to import and create data files for the model\\
 
 The model is implemented in experiment 1 to 5, each script can be independently run after importing data.
 Exp1.py: Varying all learning rates
