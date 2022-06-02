@@ -133,9 +133,82 @@ plotTSonwind3h(cf_onshore3h, 24/res, vmin = cf_onshore3h.min(), vmax = cf_onshor
 plotTSoffwind(cf_offshore_raw, 24, vmin = cf_offshore_raw.min(), vmax = cf_offshore_raw.max())
 plotTSoffwind3h(cf_offshore3h, 24/res, vmin = cf_offshore3h.min(), vmax = cf_offshore3h.max())
 
+#%% 4 day series
+def plotTSoffwind3h4d(data, periodlength, vmin, vmax):
+    fig, axes = plt.subplots(figsize = [6, 4], dpi = 400, nrows = 1, ncols = 1)
+    stacked, timeindex = tsam.unstackToPeriods(copy.deepcopy(data), periodlength)
+    cax = axes.imshow(stacked.values.T,cmap=cm.winter, interpolation = 'nearest', vmin = vmin, vmax = vmax)
+    axes.set_aspect('auto')  
+    axes.set_ylabel(str(res)+' hour steps')
+    plt.xlabel('Day [1-2: winter] [3-4: summer]')
+    plt.title('Offshore wind power')
+    fig.subplots_adjust(right = 1.2)
+    cbar=plt.colorbar(cax)    
+    cbar.set_label('capacity factor')
+    plt.xticks(ticks=[-0.5,0.5,1.5,2.5],labels=['1','2','3','4'])
+    plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
+    plt.savefig('Results/CF_series/CF_offwind_4d3h.png', dpi=400,bbox_inches='tight',transparent=True)
+
+def plotTS3h4d(data, periodlength, vmin, vmax):
+    fig, axes = plt.subplots(figsize = [6, 4], dpi = 400, nrows = 1, ncols = 1)
+    stacked, timeindex = tsam.unstackToPeriods(copy.deepcopy(data), periodlength)
+    cax = axes.imshow(stacked.values.T,cmap=cm.hot, interpolation = 'nearest', vmin = vmin, vmax = vmax)
+    axes.set_aspect('auto')  
+    axes.set_ylabel(str(res)+' hour steps')
+    plt.xlabel('Day [1-2: winter] [3-4: summer]')
+    plt.title('Solar power')
+    fig.subplots_adjust(right = 1.2)
+    cbar=plt.colorbar(cax)    
+    cbar.set_label('capacity factor')
+    plt.xticks(ticks=[-0.5,0.5,1.5,2.5],labels=['1','2','3','4'])
+    plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
+    plt.savefig('Results/CF_series/CF_solar_4d3h.png', dpi=400,bbox_inches='tight',transparent=True)
+
+    
+    
+def plotTSonwind3h4d(data, periodlength, vmin, vmax):
+    fig, axes = plt.subplots(figsize = [6, 4], dpi = 400, nrows = 1, ncols = 1)
+    stacked, timeindex = tsam.unstackToPeriods(copy.deepcopy(data), periodlength)
+    cax = axes.imshow(stacked.values.T,cmap=cm.summer, interpolation = 'nearest', vmin = vmin, vmax = vmax)
+    axes.set_aspect('auto')  
+    axes.set_ylabel(str(res)+' hour steps')
+    plt.xlabel('Day [1-2: winter] [3-4: summer]')
+    plt.title('Onshore wind power')
+    fig.subplots_adjust(right = 1.2)
+    cbar=plt.colorbar(cax)    
+    cbar.set_label('capacity factor')
+    plt.xticks(ticks=[-0.5,0.5,1.5,2.5],labels=['1','2','3','4'])
+    plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
+    plt.savefig('Results/CF_series/CF_onwind_4d3h.png', dpi=400,bbox_inches='tight',transparent=True)
+
+
+cf_solar_raw = pd.read_excel('data/capacityfactor_4days.xlsx','pv',index_col=0)
+cf_solar_raw = cf_solar_raw[ct]
+cf_solar = cf_solar_raw.to_numpy()
+cf_solar3h = np.mean(cf_solar.reshape(-1,res),axis=1)
+cf_solar3h = pd.DataFrame(cf_solar3h)
+
+cf_onshore_raw = pd.read_excel('data/capacityfactor_4days.xlsx','onshore',index_col=0)
+cf_onshore_raw = cf_onshore_raw[ct]
+cf_onshore = cf_onshore_raw.to_numpy()
+cf_onshore3h = np.mean(cf_onshore.reshape(-1,res),axis=1)
+cf_onshore3h = pd.DataFrame(cf_onshore3h)
+
+
+cf_offshore_raw = pd.read_excel('data/capacityfactor_4days.xlsx','offshore',index_col=0)
+cf_offshore_raw = cf_offshore_raw[ct]
+cf_offshore = cf_offshore_raw.to_numpy()
+cf_offshore3h = np.mean(cf_offshore.reshape(-1,res),axis=1)
+cf_offshore3h = pd.DataFrame(cf_offshore3h)
+
+# plotting
+plotTS3h4d(cf_solar3h, 24/res, vmin = cf_solar3h.min(), vmax = cf_solar3h.max())
+plotTSonwind3h4d(cf_onshore3h, 24/res, vmin = cf_onshore3h.min(), vmax = cf_onshore3h.max())
+plotTSoffwind3h4d(cf_offshore3h, 24/res, vmin = cf_offshore3h.min(), vmax = cf_offshore3h.max())
+
 #%% Time series aggregation
 
-n_days = 14
+n_days = 2
 hpp = 24 # hours per period
 
 cf_solar_raw = pd.read_csv('data/pv_optimal.csv',sep=";",index_col=0)
@@ -165,7 +238,7 @@ cf_onshore_rawagg = tsam.TimeSeriesAggregation(cf_onshore_raw_ct, noTypicalPerio
                                         clusterMethod = 'k_means', 
                                         extremePeriodMethod = 'new_cluster_center',
                                         addPeakMin = [ct], addPeakMax = [ct] )
-typPeriods_onshore = cf_onshore_rawagg.crleateTypicalPeriods()
+typPeriods_onshore = cf_onshore_rawagg.createTypicalPeriods()
 print(cf_onshore_rawagg.accuracyIndicators())
 
 
@@ -221,6 +294,10 @@ def aggplotTSoffwind(data, periodlength, vmin, vmax):
 aggplotTS(typPeriods_solar,    hpp, vmin = typPeriods_solar.min(),     vmax = typPeriods_solar.max())
 aggplotTSonwind(typPeriods_onshore,  hpp, vmin = typPeriods_onshore.min(),   vmax = typPeriods_onshore.max())
 aggplotTSoffwind(typPeriods_offshore, hpp, vmin = typPeriods_offshore.min(),  vmax = typPeriods_offshore.max())
+
+typPeriods_solar.to_excel('data/solar_agg_4d3h.xlsx')
+typPeriods_onshore.to_excel('data/onshore_agg_4d3h.xlsx')
+typPeriods_offshore.to_excel('data/ofshore_agg_4d3h.xlsx')
 
 #%% Image correlation 
 im1 = image.imread('Capacity_factors_plots/solar1h.png')

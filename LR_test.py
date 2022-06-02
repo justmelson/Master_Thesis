@@ -23,13 +23,13 @@ plt.style.use("seaborn")
 
 #%% Scenarios and settings
 
-scenario = "no_co2-no_learning"
+# scenario = "no_co2-no_learning"
 # scenario = "co2-0p2-no_learning"
-# scenario = "co2-0p2-learning"
+scenario = "co2-0p2-learning"
 # scenario = "no_co2-learning"
 
-learning_scenario = "high_learning"
-# learning_scenario = "low_learning"
+# learning_scenario = "high_learning"
+learning_scenario = "low_learning"
 # learning_scenario = "nom_learning"
 
 
@@ -37,7 +37,7 @@ learning_scenario = "high_learning"
 Renewable_balancing = True
 
 # CO2 budget for 2050 global warming goals
-co2_until_2050 = 10000000000 # 100 million tCO2 ,10000000000 # 10 gigaton CO2
+co2_until_2050 = 10.5e9 # 100 million tCO2 ,10000000000 # 10 gigaton CO2
 
 # Greenfield scenario 
 Greenfield = True
@@ -85,17 +85,33 @@ color_storage = lists[6]
 if Renewable_balancing is True:
     for tech in techs:
         parameters.at["current capital cost",tech] = (parameters.at["current capital cost",tech]/parameters.at["capacity factor",tech]) 
+        parameters.at["current annuity",tech] = (parameters.at["current annuity",tech]/parameters.at["capacity factor",tech]) 
+
         # parameters.at["current LCOE",tech] = (parameters.at["current LCOE",tech]/parameters.at["capacity factor",tech])
         # parameters.at["potential capital cost",tech] = (parameters.at["potential capital cost",tech]/parameters.at["capacity factor",tech]) 
 
+greenfield_df = {}
+
 # Green- or brownfield scenario:
+for tech in techs:
+    greenfield_df[tech] = 1/parameters.at["existing capacity",tech]
+
 if Greenfield is True:
     for tech in techs:
-        parameters.loc["existing age"] = [0,0,0,0,0,0,0] #years
-        parameters.loc["existing capacity"] = [0,0,0,0,0,0,0]
+        parameters.loc["existing age"]      = [0,0,0,0,0,0,0] #years
+        parameters.loc["existing capacity"] = [0,0,0,0,0,0,0]  
     print("Greenfield approach")
 else:
+    for tech in techs:
+        greenfield_df[tech] = 1
+    for tech in storage:
+        greenfield_df[tech] = 1
     print("Brownfield approach")
+    
+parameters.at["marginal cost","OCGT"] = 5/0.4
+parameters.at["marginal cost","CCGT"] = 10/0.56
+parameters.at["marginal cost","coal"] = 3.45/0.33
+
 
 #%% Updating learning rates and CO2 budget
 
@@ -150,8 +166,10 @@ else:
     print("CO2 budget of "+ str(co2_until_2050) + " tons CO2")
 
 
+
+
 #%%
-MWh_total = demand['demand'].sum()*1000*8760/50
+MWh_total = demand['demand'].sum()*1000*8760
 
     
 #%% One node model
@@ -245,9 +263,9 @@ model.build_years = Constraint(techs, years, rule=build_years)
 
 def fixed_cost_constraint(model,tech,year):
     if parameters.at["learning parameter",tech] == 0:
-        return model.fixed_costs[tech,year] == parameters.at["current capital cost",tech]
+        return model.fixed_costs[tech,year] == parameters.at["current annuity",tech]
     else:
-        return model.fixed_costs[tech,year] == parameters.at["current capital cost",tech] * (1+sum(model.generators_built[tech,yeart] for yeart in years if yeart < year))**(-parameters.at["learning parameter",tech])
+        return model.fixed_costs[tech,year] == parameters.at["current annuity",tech] * (1+sum(model.generators_built[tech,yeart] for yeart in years if yeart < year)*greenfield_df[tech])**(-parameters.at["learning parameter",tech])
         # return model.fixed_costs[tech,year] == parameters.at["base cost",tech] + (parameters.at["current capital cost",tech]-parameters.at["base cost",tech])*(1+sum(model.generators_built[tech,yeart] for yeart in years if yeart < year))**(-parameters.at["learning parameter",tech])
 model.fixed_cost_constraint = Constraint(techs, years, rule=fixed_cost_constraint)
 
@@ -280,7 +298,6 @@ print("Avg. cost (in euro/MWh) =","%.2f"% systemcost)
 
 # colormap = "Set2"
 
-
 # file name
 if "no_learning" in scenario: 
     filename = scenario+"LR"
@@ -305,14 +322,17 @@ for year in years:
 #     dispatch.at[year,"battery_store"] = model.storage_dispatch["battery_store", year].value*8760
 #     dispatch.at[year,"hydrogen_storage"] = model.storage_dispatch["hydrogen_storage", year].value*8760
 fig, ax = plt.subplots()
-fig.set_dpi((400))
+fig.set_dpi((100))
 dispatch.plot(kind="area",stacked=True,ax=ax,linewidth=0,color=colors)#cmap=colormap)
 ax.set_xlabel("year")
 ax.set_ylabel("Gross electricity generation [GWh]")
 fig.tight_layout()
-ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 ax.legend().set_visible(lgnd)
-fig.savefig("Figures_LR_test/{}-dispatch.png".format(filename),transparent=True)
+ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(15)
+fig.savefig("Figures_LR_test/{}-dispatch.pdf".format(filename),transparent=True)
 
 
 capacities = pd.DataFrame(0.,index=years,columns=techs)
@@ -328,7 +348,7 @@ for year in years:
 
         
 fig, ax = plt.subplots()
-fig.set_dpi((400))
+fig.set_dpi((100))
 capacities.plot(kind="area",stacked=True,ax=ax,linewidth=0,color=colors)
 ax.set_xlabel("Year")
 ax.set_ylabel("Installed capacity [GW]")
@@ -336,7 +356,10 @@ ax.set_ylim([0,1500])
 fig.tight_layout()
 ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 ax.legend().set_visible(lgnd)
-fig.savefig("Figures_LR_test/{}-capacity.png".format(filename),transparent=True)
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(15)
+fig.savefig("Figures_LR_test/{}-capacity.pdf".format(filename),transparent=True)
 
 build_years = pd.DataFrame(0.,index=years,columns=techs) # +storage
 for year in years:
@@ -349,7 +372,7 @@ for year in years:
 
 
 fig, ax = plt.subplots()
-fig.set_dpi((400))
+fig.set_dpi((100))
 build_years.plot(kind="area",stacked=True,ax=ax,linewidth=0,color=colors)
 ax.set_xlabel("year")
 ax.set_ylabel("new capacity built [GW]")
@@ -357,7 +380,10 @@ ax.set_ylim([0,250])
 fig.tight_layout()
 ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 ax.legend().set_visible(lgnd)
-fig.savefig("Figures_LR_test/{}-new_capacity.png".format(filename),transparent=True)
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(15)
+fig.savefig("Figures_LR_test/{}-new_capacity.pdf".format(filename),transparent=True)
 
 
 level_cost = pd.DataFrame(0.,index=years,columns=techs)
@@ -369,15 +395,15 @@ for year in years:
 
 
 fig, ax = plt.subplots()
-fig.set_dpi(400)
+fig.set_dpi(100)
 level_cost.plot(ax=ax,linewidth=3,color=colors)
 ax.set_xlabel("year")
 ax.set_ylabel("LCOE [EUR/MWh]")
 # ax.set_yscale("log")
-ax.set_ylim([0,130])
+ax.set_ylim([0,60])
 ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 ax.legend().set_visible(lgnd)
-fig.savefig("Figures_LR_test/{}-lcoe.png".format(filename),transparent=True)
+fig.savefig("Figures_LR_test/{}-lcoe.pdf".format(filename),transparent=True)
 
 
 # emissions = pd.DataFrame(0.,index=years,columns=techs)
@@ -394,7 +420,7 @@ fig.savefig("Figures_LR_test/{}-lcoe.png".format(filename),transparent=True)
 # # ax.set_ylim([0,40])
 # ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 # ax.legend().set_visible(lgnd)
-# fig.savefig("Figures_LR_test/{}-emissions.png".format(filename),transparent=True)
+# fig.savefig("Figures_LR_test/{}-emissions.pdf".format(filename),transparent=True)
 
 #%%
 #Save data

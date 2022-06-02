@@ -11,6 +11,8 @@ def annuity(n,r):
     discount rate of r, e.g. annuity(20,0.05)*20 = 1.6"""
 
     if r > 0:
-        return r/(1. - 1./(1.+r)**n)
+        return r/(1. - 1./(1.+r)**n) 
     else:
         return 1/n
+
+    
