@@ -1,6 +1,7 @@
-# Master_Thesis
- 
-Nonlinear endogenoues learning model
+
+# Nonlinear endogenoues learning model
+
+
 
 Run file "import_data.py" to import and create data files for the model
 
@@ -19,3 +20,8 @@ Exp5.py: Varying discount rates
 LR_test.py: Validation of learning implementation
 
 CO2_constraint.py: Validation of CO2 constraint implementation
+
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
