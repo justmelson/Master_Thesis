@@ -70,18 +70,6 @@ costs.loc[costs.unit.str.contains("/kW"), "value"] *= 1e3
 
 #min_count=1 is important to generate NaNs which are then filled by fillna
 costs = costs.loc[:, "value"].unstack(level=1).groupby("technology").sum(min_count=1)
-# costs = costs.fillna({"CO2 intensity" : 0,
-#                       "FOM" : 0,
-#                       "VOM" : 0,
-#                       "discount rate" : discount_rate,
-#                       "efficiency" : 1,
-#                       "fuel" : 0,
-#                       "investment" : 0,
-#                       "lifetime" : lifetime
-# })
-# Printing out the first 5 rows of the dataframe
-
-  #print (costs[6].head())
 
 r = 0.07 # discount rate
 fuel_cost_gas = 100 # in €/MWh_th from  https://tradingeconomics.com/commodity/eu-natural-gas
@@ -225,14 +213,6 @@ for i in range(len(storage)):
     store_param.loc["learning parameter"][i] = math.log(1/(1-store_param.loc["learning rate"][i])) / math.log(2)
 
 
-# # carbon budget in average tCO2   
-# if "no_co2" in scenario:
-#     co2_budget = 1e30
-#     print("No CO2 budget")
-# else:
-#     co2_budget = co2_until_2050 # [tCO2] 10 Gigatons CO2
-#     print("CO2 budget of "+ str(co2_until_2050) + " tons CO2")
-
 
 
 # carbon budget in average tCO2/MWh_el    
@@ -276,26 +256,6 @@ def balance_constraint(model,year):
 model.balance_constraint = Constraint(years, rule=balance_constraint)
 
 
-# def storebalancePV_constraint(model,year):
-#     return model.storage_dispatch["battery_store",year] == model.generators_dispatch["solar_PV",year]*0.3
-# model.storebalancePV_constraint = Constraint(years, rule=storebalancePV_constraint)
-
-# def storebalanceWind_constraint(model,tech,year):
-#     return model.storage_dispatch["hydrogen_storage",year] == sum(model.generators_dispatch[tech,year] for tech in wind)*0.3
-# model.storebalanceWind_constraint = Constraint(renewables,years, rule=storebalanceWind_constraint)
-
-# def storage_constraint(model,tech,year):
-#     return model.storage_dispatch[tech,year] <= model.storage[tech,year]
-# model.storage_constraint = Constraint(storage, years, rule=storage_constraint)
-
-# def solar_constraint(model,year):
-#     return model.generators["solar_PV",year] <= sum(model.generators_dispatch[tech,year] for tech in techs)*0.5
-# model.solar_constraint = Constraint(years, rule=solar_constraint)
-
-# def onshore_constraint(model,year):
-#     return model.generators["onshore_wind",year] <= sum(model.generators_dispatch[tech,year] for tech in techs)*0.3
-# model.onshore_constraint = Constraint(years, rule=onshore_constraint)
-
 def generator_constraint(model,tech,year):
     return model.generators_dispatch[tech,year] <= model.generators[tech,year] #*parameters.at["capacity factor",tech] # Including capacity factors 
 model.generator_constraint = Constraint(techs, years, rule=generator_constraint)
@@ -304,19 +264,6 @@ model.generator_constraint = Constraint(techs, years, rule=generator_constraint)
 def co2_constraint(model,tech,year):
     return co2_budget >= sum((model.generators_dispatch[tech,year] * 8760 * 1000 * parameters.at["specific emissions",tech]) for tech in techs for year in years)
 model.co2_constraint = Constraint(techs,years,rule=co2_constraint)
-
-
-# def inverter_constraint(model,tech,year):
-#     return model.storage_dispatch["battery_store",year] == model.storage_dispatch["battery_inverter",year]
-# model.inverter_constraint = Constraint(storage, years, rule=inverter_constraint)
-
-# def fuelcell_constraint(model,tech,year):
-#     return model.storage_dispatch["hydrogen_storage",year] == model.storage_dispatch["fuel_cell",year]
-# model.fuelcell_constraint = Constraint(storage, years, rule=fuelcell_constraint)
-
-# def electrolysis_constraint(model,tech,year):
-#     return model.storage_dispatch["hydrogen_storage",year] == model.storage_dispatch["electrolysis",year]
-# model.electrolysis_constraint = Constraint(storage, years, rule=electrolysis_constraint)
 
 def build_years(model,tech,year):
     if year < years[0] + parameters.at["lifetime",tech] - parameters.at["existing age",tech]:
@@ -327,15 +274,6 @@ def build_years(model,tech,year):
     return model.generators[tech,year] == constant + sum(model.generators_built[tech,yearb] for yearb in years if ((year>= yearb) and (year < yearb + parameters.at["lifetime",tech])))
 model.build_years = Constraint(techs, years, rule=build_years)
 
-# def build_years_storage(model,tech,year):
-#     if year < years[0] + store_param.at["lifetime",tech] - store_param.at["existing age",tech]:
-#         constant = store_param.at["existing capacity",tech]
-#     else:
-#         constant = 0.
-    
-#     return model.storage[tech,year] == constant + sum(model.storage_built[tech,yearb] for yearb in years if ((year>= yearb) and (year < yearb + store_param.at["lifetime",tech])))
-# model.build_years_storage = Constraint(storage, years, rule=build_years_storage)
-
 def fixed_cost_constraint(model,tech,year):
     if parameters.at["learning parameter",tech] == 0:
         return model.fixed_costs[tech,year] == parameters.at["current capital cost",tech]
@@ -343,20 +281,6 @@ def fixed_cost_constraint(model,tech,year):
         return model.fixed_costs[tech,year] == parameters.at["current capital cost",tech] * (1+sum(model.generators_built[tech,yeart] for yeart in years if yeart < year))**(-parameters.at["learning parameter",tech])
         # return model.fixed_costs[tech,year] == parameters.at["base cost",tech] + (parameters.at["current capital cost",tech]-parameters.at["base cost",tech])*(1+sum(model.generators_built[tech,yeart] for yeart in years if yeart < year))**(-parameters.at["learning parameter",tech])
 model.fixed_cost_constraint = Constraint(techs, years, rule=fixed_cost_constraint)
-
-# def fixed_cost_constraint_storage(model,tech,year):
-#     if store_param.at["learning parameter",tech] == 0:
-#         return model.fixed_costs_storage[tech,year] == store_param.at["current capital cost",tech]
-#     else:
-#         return model.fixed_costs_storage[tech,year] == store_param.at["current capital cost",tech] * (1+sum(model.storage_built[tech,yeart] for yeart in years if yeart < year))**(-store_param.at["learning parameter",tech])
-#         # return model.fixed_costs_storage[tech,year] == store_param.at["potential capital cost",tech] + (store_param.at["current capital cost",tech]-store_param.at["potential capital cost",tech])*(1+sum(model.storage[tech,yeart] for yeart in years if yeart < year))**(-store_param.at["learning parameter",tech])
-# model.fixed_cost_constraint_storage = Constraint(storage, years, rule=fixed_cost_constraint_storage)
-
-# def renewable_constraint(model,tech,techren,year):
-#     if value(sum(model.generators_dispatch[techren,year] for techren in renewables)) > value(sum(model.generators_dispatch[tech,year] for tech in techs)*0.7):
-#         return model.storage_dispatch["battery_store",year] == sum(model.generators_dispatch[techren,year] for tech in renewables)*0.3
-        
-# model.renewable_constraint = Constraint(techs,renewables, years, rule=renewable_constraint)
 
 #%% Solving model
 
