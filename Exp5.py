@@ -31,9 +31,9 @@ scenario = "co2_constraint-LR"
 learning_scenario = "nomLR"
 
 # discount rate
-r = 0.05
+r = 0.06
 
-floor = 'direct_air_nofl' #'_revCC01LR15' # revCC is revised CC cost
+floor = 'CCrevCC'#_zero2050' #'_revCC01LR15' # revCC is revised CC cost
 filename = "Exp5_"+str(r)+floor#+'revCC'
 
 # CO2 budget for 2050 global warming goals
@@ -116,7 +116,7 @@ CC_techs        = lists[7]
 
 storage = ['battery_store']
 storage_techs = ['battery_store','battery_inverter']
-CC_techs = ['direct_air']
+CC_techs = ['CC']
 
 
 greenfield_df = {}
@@ -264,7 +264,7 @@ model.objective = Objective(expr=constant +
 #%% Balance Constraints
 
 def balance_constraint(model,tech,year,hour): # GWh
-    return demand[year].at[hour,0]  <= sum(model.generators_dispatch[tech, year, hour] for tech in techs) + model.storage_discharge['battery_store',year,hour] - model.storage_charge['battery_store',year,hour] - model.CC_dispatch['direct_air',year,hour]
+    return demand[year].at[hour,0]  <= sum(model.generators_dispatch[tech, year, hour] for tech in techs) + model.storage_discharge['battery_store',year,hour] - model.storage_charge['battery_store',year,hour] - model.CC_dispatch['CC',year,hour]
 model.balance_constraint = Constraint(techs,years,hours, rule=balance_constraint)
 
 # def ramp_rateup_constraint(model,tech,year,hour):
@@ -350,27 +350,27 @@ def storage_bounding_constraint(model,tech,year):
 model.storage_bounding_constraint = Constraint(storage_techs, years, rule=storage_bounding_constraint)
 
 
-# def fixed_cost_constraint_storage(model,tech,year):
-#     if store_param.at["learning parameter",tech] == 0:
-#         return model.fixed_costs_storage[tech,year] == store_param.at["current annuity",tech] #EUR/MW/a
-#     else:
-#         return (model.fixed_costs_storage[tech,year] == (store_param.at["2050 annuity",tech] + 
-#                                                               (1+store_param.at["current annuity",tech]-store_param.at["2050 annuity",tech]) * 
-#                                                               (1+sum(model.storage_built[tech,yeart] for yeart in years 
-#                                                                      if yeart < year)*greenfield_df[tech])**(-store_param.at["learning parameter",tech]))) #EUR/MW/a
-# model.fixed_cost_constraint_storage = Constraint(storage_techs,years, rule=fixed_cost_constraint_storage)
-
-
-
 def fixed_cost_constraint_storage(model,tech,year):
     if store_param.at["learning parameter",tech] == 0:
-        return model.fixed_costs_storage[tech,year] == store_param.at["current annuity",tech] #EUR/GW
+        return model.fixed_costs_storage[tech,year] == store_param.at["current annuity",tech] #EUR/MW/a
     else:
-        return (model.fixed_costs_storage[tech,year] == (store_param.at["current annuity",tech]* 
-                                                          (1+sum(model.storage_built[tech,yeart] 
-                                                                for yeart in years if yeart < year)*
-                                                          greenfield_df[tech])**(-store_param.at["learning parameter",tech]))) #EUR/GW
+        return (model.fixed_costs_storage[tech,year] == (store_param.at["2050 annuity",tech] + 
+                                                              (1+store_param.at["current annuity",tech]-store_param.at["2050 annuity",tech]) * 
+                                                              (1+sum(model.storage_built[tech,yeart] for yeart in years 
+                                                                      if yeart < year)*greenfield_df[tech])**(-store_param.at["learning parameter",tech]))) #EUR/MW/a
 model.fixed_cost_constraint_storage = Constraint(storage_techs,years, rule=fixed_cost_constraint_storage)
+
+
+
+# def fixed_cost_constraint_storage(model,tech,year):
+#     if store_param.at["learning parameter",tech] == 0:
+#         return model.fixed_costs_storage[tech,year] == store_param.at["current annuity",tech] #EUR/GW
+#     else:
+#         return (model.fixed_costs_storage[tech,year] == (store_param.at["current annuity",tech]* 
+#                                                           (1+sum(model.storage_built[tech,yeart] 
+#                                                                 for yeart in years if yeart < year)*
+#                                                           greenfield_df[tech])**(-store_param.at["learning parameter",tech]))) #EUR/GW
+# model.fixed_cost_constraint_storage = Constraint(storage_techs,years, rule=fixed_cost_constraint_storage)
 
 
 #%% Installed capacity constraints
@@ -395,26 +395,26 @@ def build_years(model,tech,year):
 model.build_years = Constraint(techs, years, rule=build_years)
 
 
-def fixed_cost_constraint(model,tech,year):
-    if parameters.at["learning parameter",tech] == 0:
-        return model.fixed_costs[tech,year] == parameters.at["current annuity",tech] #EUR/GW
-    else:
-        return model.fixed_costs[tech,year] == (parameters.at["current annuity",tech]  * 
-                                                (1+sum(model.generators_built[tech,yeart] 
-                                                        for yeart in years 
-                                                        if yeart < year)*greenfield_df[tech])**
-                                                (-parameters.at["learning parameter",tech])) #EUR/GW
-model.fixed_cost_constraint = Constraint(techs, years, rule=fixed_cost_constraint)
-
 # def fixed_cost_constraint(model,tech,year):
 #     if parameters.at["learning parameter",tech] == 0:
-#         return model.fixed_costs[tech,year] == parameters.at["current annuity",tech] 
+#         return model.fixed_costs[tech,year] == parameters.at["current annuity",tech] #EUR/GW
 #     else:
-#         return (model.fixed_costs[tech,year] == (parameters.at["2050 annuity",tech] + 
-#                                                       (1+parameters.at["current annuity",tech]-parameters.at["2050 annuity",tech]) * 
-#                                                       (1+sum(model.generators_built[tech,yeart] for yeart in years 
-#                                                              if yeart < year)*greenfield_df[tech])**(-parameters.at["learning parameter",tech]))) 
+#         return model.fixed_costs[tech,year] == (parameters.at["current annuity",tech]  * 
+#                                                 (1+sum(model.generators_built[tech,yeart] 
+#                                                         for yeart in years 
+#                                                         if yeart < year)*greenfield_df[tech])**
+#                                                 (-parameters.at["learning parameter",tech])) #EUR/GW
 # model.fixed_cost_constraint = Constraint(techs, years, rule=fixed_cost_constraint)
+
+def fixed_cost_constraint(model,tech,year):
+    if parameters.at["learning parameter",tech] == 0:
+        return model.fixed_costs[tech,year] == parameters.at["current annuity",tech] 
+    else:
+        return (model.fixed_costs[tech,year] == (parameters.at["2050 annuity",tech] + 
+                                                      (1+parameters.at["current annuity",tech]-parameters.at["2050 annuity",tech]) * 
+                                                      (1+sum(model.generators_built[tech,yeart] for yeart in years 
+                                                              if yeart < year)*greenfield_df[tech])**(-parameters.at["learning parameter",tech]))) 
+model.fixed_cost_constraint = Constraint(techs, years, rule=fixed_cost_constraint)
 
 #%% CO2 constraint
 # Converting GW to MW (1000), dty to go from 4 days to 365 days, 
@@ -424,16 +424,24 @@ def co2_constraint(model,tech,year,hour):
         return (co2_until_2050 >= (sum(model.generators_dispatch[tech,year,hour]*1000 * parameters.at["specific emissions",tech]*dty*hour_interval*interval
                                         for tech in techs 
                                         for hour in hours 
-                                        for year in years) - sum(model.carboncaptured['direct_air',year,hour]*dty*hour_interval*interval
+                                        for year in years) - sum(model.carboncaptured['CC',year,hour]*dty*hour_interval*interval
                                                                                           for hour in hours 
                                                                                           for year in years)))
                                                                                           # if "co2_constraint" in scenario else Constraint.Skip)
 model.co2_constraint = Constraint(techs, years, hours,rule=co2_constraint)
 
+# def co2_constraint2050(model,tech,hour): 
+#         return (0 >= (sum(model.generators_dispatch[tech,2050,hour]*1000 * parameters.at["specific emissions",tech]*dty*hour_interval*interval
+#                                         for tech in techs 
+#                                         for hour in hours) - sum(model.carboncaptured['CC',2050,hour]*dty*hour_interval*interval
+#                                                                                           for hour in hours)))
+#                                                                                           # if "co2_constraint" in scenario else Constraint.Skip)
+# model.co2_constraint2050 = Constraint(techs, hours,rule=co2_constraint2050)
+
 
 # def co2_constraint(model,tech,year,hour): 
 #         return (co2_until_2050 >= (sum((model.generators_dispatch[tech,year,hour]*1000 * parameters.at["specific emissions",tech]*dty*hour_interval*interval - 
-#                                         model.carboncaptured['direct_air',year,hour]*dty*hour_interval*interval)
+#                                         model.carboncaptured['CC',year,hour]*dty*hour_interval*interval)
 #                                                                                             for tech in techs
 #                                                                                           for hour in hours 
 #                                                                                           for year in years)))
@@ -444,9 +452,9 @@ model.co2_constraint = Constraint(techs, years, hours,rule=co2_constraint)
 #%% Carbon capture
 
 
-# def carbon_captured_constraint(model,tech,year,hour): # MtCO2 <= MWh*MtCO2/MWh
-#     return model.carboncaptured[tech,year,hour] <= sum(model.generators_dispatch[tech,year,hour]*parameters.at["specific emissions",tech] for tech in techs)
-# model.carbon_captured_constraint = Constraint(CC_techs,years,hours,rule=carbon_captured_constraint)
+def carbon_captured_constraint(model,tech,year,hour): # MtCO2 <= MWh*MtCO2/MWh
+    return model.carboncaptured[tech,year,hour] <= sum(model.generators_dispatch[tech,year,hour]*parameters.at["specific emissions",tech] for tech in techs)
+model.carbon_captured_constraint = Constraint(CC_techs,years,hours,rule=carbon_captured_constraint)
 
 def CC_dispatch_constraint(model,tech,year,hour): #GWh =   ktCO2 * MWhel/MtCO2/1000
     return model.CC_dispatch[tech,year,hour] == model.carboncaptured[tech,year,hour]*CC_param.at["power input",tech]/1000
@@ -465,26 +473,26 @@ def CC_build_years(model,tech,year): # capacity is MtCO2/h
 model.CC_build_years = Constraint(CC_techs, years, rule=CC_build_years)
 
 
-# def CC_fixed_cost_constraint(model,tech,year): #EUR/(tCO2/h)
-#     if CC_param.at["learning parameter",tech] == 0:
-#         return model.CC_fixed_costs[tech,year] == CC_param.at["current annuity",tech] #EUR/(tCO2/h)
-#     else:
-#         return (model.CC_fixed_costs[tech,year] == (CC_param.at["2050 annuity",tech] + 
-#                                                     (1+CC_param.at["current annuity",tech]-
-#                                                       CC_param.at["2050 annuity",tech])*(1+sum(model.CC_built[tech,yeart] 
-#                                                                                                     for yeart in years 
-#                                                                                                     if yeart < year))**(-CC_param.at["learning parameter",tech]))) #EUR/(tCO2/h)
-# model.CC_fixed_cost_constraint = Constraint(CC_techs, years, rule=CC_fixed_cost_constraint) #EUR/(tCO2/h)
-
 def CC_fixed_cost_constraint(model,tech,year): #EUR/(tCO2/h)
     if CC_param.at["learning parameter",tech] == 0:
         return model.CC_fixed_costs[tech,year] == CC_param.at["current annuity",tech] #EUR/(tCO2/h)
     else:
-        return (model.CC_fixed_costs[tech,year] == CC_param.at["current annuity",tech]
-                                                    *(1+sum(model.CC_built[tech,yeart] 
-                                                            for yeart in years 
-                                                            if yeart < year))**(-CC_param.at["learning parameter",tech])) #EUR/(tCO2/h)
+        return (model.CC_fixed_costs[tech,year] == (CC_param.at["2050 annuity",tech] + 
+                                                    (1+CC_param.at["current annuity",tech]-
+                                                      CC_param.at["2050 annuity",tech])*(1+sum(model.CC_built[tech,yeart] 
+                                                                                                    for yeart in years 
+                                                                                                    if yeart < year))**(-CC_param.at["learning parameter",tech]))) #EUR/(tCO2/h)
 model.CC_fixed_cost_constraint = Constraint(CC_techs, years, rule=CC_fixed_cost_constraint) #EUR/(tCO2/h)
+
+# def CC_fixed_cost_constraint(model,tech,year): #EUR/(tCO2/h)
+#     if CC_param.at["learning parameter",tech] == 0:
+#         return model.CC_fixed_costs[tech,year] == CC_param.at["current annuity",tech] #EUR/(tCO2/h)
+#     else:
+#         return (model.CC_fixed_costs[tech,year] == CC_param.at["current annuity",tech]
+#                                                     *(1+sum(model.CC_built[tech,yeart] 
+#                                                             for yeart in years 
+#                                                             if yeart < year))**(-CC_param.at["learning parameter",tech])) #EUR/(tCO2/h)
+# model.CC_fixed_cost_constraint = Constraint(CC_techs, years, rule=CC_fixed_cost_constraint) #EUR/(tCO2/h)
 
 
 
@@ -555,7 +563,7 @@ print("CO2 emitted ktCO2 =","%.2f"% CO2_emitted)
 
 
 CO2_captured = sum((model.carboncaptured[tech,year,hour].value*dty*3*interval) for tech in CC_techs for hour in hours for year in years)
-print("CO2 captured ktCO2 =","%.2f"% CO2_captured) 
+print("CO2 captured ktCO2 =","%.4f"% CO2_captured) 
 
 print("delta=","%.2f"% (CO2_emitted-CO2_captured))
 
@@ -951,7 +959,7 @@ for year in years:
     emissions[year] = pd.DataFrame(0.,index=hours,columns=techs)
     for hour in hours:
         for tech in techs:
-            emissions[year].at[hour,tech] = model.generators_dispatch[tech,year,hour].value * 1000 * parameters.at["specific emissions",tech]
+            emissions[year].at[hour,tech] = model.generators_dispatch[tech,year,hour].value * 1000 * parameters.at["specific emissions",tech] 
             
 
             
@@ -1054,11 +1062,10 @@ for year in years:
 
 
 CC_dispatch2050 = pd.DataFrame(0.,index=hours,columns=CC_techs) 
-carboncapt = pd.DataFrame(0.,index=hours,columns=CC_techs) 
 for hour in hours:
     for tech in CC_techs:
         CC_dispatch2050.at[hour,tech] = model.CC_dispatch[tech,2050,hour].value
-        carboncapt.at[hour,tech] = model.carboncaptured[tech,2050,hour].value
+        # carboncapt.at[hour,tech] = model.carboncaptured[tech,2050,hour].value
 
 
 CC_powercons = {}
@@ -1069,13 +1076,20 @@ for year in years:
     for hour in hours:
         for tech in CC_techs:
             CC_powercons[year].at[hour,tech] = model.CC_dispatch[tech,year,hour].value # GWh
-            carboncapt[year].at[hour,tech] = model.carboncaptured[tech,year,hour].value #tCO2/h
+            carboncapt[year].at[hour,tech] = model.carboncaptured[tech,year,hour].value #ktCO2/h
+            
+
+# emissions = pd.DataFrame(0.,index=years,columns=techs)
+# for year in years:
+#     for tech in techs:
+#         emissions.at[year,tech] = model.generators_dispatch[tech,year].value*8760* 1000 * parameters.at["specific emissions",tech]
+
 
 
 CC_powercons_allyears = pd.concat([CC_powercons[year] for year in years])  
 CC_powercons_allyears = CC_powercons_allyears.reset_index()
 CC_powercons_allyears = CC_powercons_allyears.drop(["index"],axis=1)
-CC_powercons_allyears.rename(columns = {'direct_air':'CC power use'}, inplace = True)
+CC_powercons_allyears.rename(columns = {'CC':'CC power use'}, inplace = True)
 
 
 carboncapt_allyears = pd.concat([carboncapt[year] for year in years])  
@@ -1090,16 +1104,16 @@ CC_powercons_allyears.plot(kind="line",ax=ax1,linewidth=4,color="magenta")
 ax1.set_xlabel("year")
 plt.xticks(ticks=[0, 112/7, 2*112/7, 3*112/7, 4*112/7, 5*112/7, 6*112/7],labels=['2020','2025','2030','2035','2040','2045','2050'])
 ax1.set_ylabel("Gross electricity generation [GWh]")
-ax1.set_ylim([0,600])
+# ax1.set_ylim([0,600])
 ax2 = ax1.twinx()
 carboncapt_allyears.plot(kind="line",ax=ax2,linewidth=3,color="green")#cmap=colormap)
 # emissions_allyears.plot(kind="line",ax=ax2,linewidth=3,color="red")#cmap=colormap)
 ax2.set_ylabel("Carbon captured [ktCO2/h]")
 fig.tight_layout()
 ax1.legend().set_visible(lgnd)
-# ax2.set_ylim([0,350])
-ax1.legend(bbox_to_anchor=(1.08, 1.15), ncol=1, fancybox=False, shadow=False)
-ax2.ticklabel_format(axis='y', style='plain')
+# ax2.set_ylim([0,360])
+ax1.legend(bbox_to_anchor=(1.2, 1.02), ncol=1, fancybox=False, shadow=False)
+# ax2.ticklabel_format(axis='y', style='plain')
 ax2.legend(bbox_to_anchor=(1.19, 0.2), ncol=1, fancybox=False, shadow=False)
 ax2.grid(False)
 fig.savefig("Results/Exp5/figures/{}-dispatch.pdf".format(filename),transparent=True,bbox_inches='tight')
@@ -1122,11 +1136,11 @@ ax.legend().set_visible(lgnd)
 ax.legend(bbox_to_anchor=(1.22, 1), ncol=1, fancybox=False, shadow=False)
 fig.tight_layout()
 ax1.legend().set_visible(lgnd)
-ax2.ticklabel_format(axis='y', style='plain')
+# ax2.ticklabel_format(axis='y', style='plain')
 ax2.legend(bbox_to_anchor=(1.2, 0.6), ncol=1, fancybox=False, shadow=False)
 fig.tight_layout()
 ax2.grid(False)
-fig.savefig("Results/Exp5/figures/{}-dispatch.pdf".format(filename+str(plotyear)),transparent=True,bbox_inches='tight')
+# fig.savefig("Results/Exp5/figures/{}-dispatch.pdf".format(filename+str(plotyear)),transparent=True,bbox_inches='tight')
 
 
 # model.CC[tech,year].value                   
@@ -1139,17 +1153,24 @@ fig.savefig("Results/Exp5/figures/{}-dispatch.pdf".format(filename+str(plotyear)
 #%%
 #Save data
 
-level_cost.to_excel("Results/Exp5/LCOE_{}.xlsx".format(filename))
-fixed_cost.to_excel("Results/Exp5/annuity_costs_{}.xlsx".format(filename))
-capcost.to_excel("Results/Exp5/capital_costs_{}.xlsx".format(filename))
+level_cost.to_excel("Results/Exp5/Comparison/LCOE_{}.xlsx".format(filename))
+fixed_cost.to_excel("Results/Exp5/Comparison/annuity_costs_{}.xlsx".format(filename))
+capcost.to_excel("Results/Exp5/Comparison/capital_costs_{}.xlsx".format(filename))
 
 
-build_years.to_pickle("Results/Exp5/{}build_years_2050CO2.pkl".format(filename))
-capacities.to_pickle("Results/Exp5/{}capacities_2050CO2.pkl".format(filename))
-dispatch_allyears.to_pickle("Results/Exp5/{}dispatch_allyears_2050CO2.pkl".format(filename))
-dispatch_4days.to_pickle("Results/Exp5/{}dispatch_sum_2050CO2.pkl".format(filename))
-CC_capacities.to_pickle("Results/Exp5/{}CC_capacities.pkl".format(filename))
+# build_years.to_pickle("Results/Comparison/Exp5/{}build_years_2050CO2.pkl".format(filename))
+# capacities.to_pickle("Results/Comparison/Exp5/{}capacities_2050CO2.pkl".format(filename))
+# dispatch_allyears.to_pickle("Results/Comparison/Exp5/{}dispatch_allyears_2050CO2.pkl".format(filename))
+# dispatch_4days.to_pickle("Results/Comparison/Exp5/{}dispatch_sum_2050CO2.pkl".format(filename))
+# CC_capacities.to_pickle("Results/Comparison/Exp5/{}CC_capacities.pkl".format(filename))
 
+build_years.to_excel("Results/Exp5/Comparison/{}build_years_2050CO2.xlsx".format(filename))
+capacities.to_excel("Results/Exp5/Comparison/{}capacities_2050CO2.xlsx".format(filename))
+dispatch_allyears.to_excel("Results/Exp5/Comparison/{}dispatch_allyears_2050CO2.xlsx".format(filename))
+dispatch_4days.to_excel("Results/Exp5/Comparison/{}dispatch_sum_2050CO2.xlsx".format(filename))
+CC_capacities.to_excel("Results/Exp5/Comparison/{}CC_capacities.xlsx".format(filename))
+carboncapt_allyears.to_excel("Results/Exp5/Comparison/{}carboncapt_allyears.xlsx".format(filename))
+emissions_allyears.to_excel("Results/Exp5/Comparison/{}emissions_allyears.xlsx".format(filename))
 
 
 # capex_pv.to_pickle("Results/Exp5/capex_pv_{}.pkl".format(filename))
