@@ -7,13 +7,29 @@ import pandas as pd
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
-# from pyomo.contrib.pynumero.interfaces.pyomo_nlp import PyomoNLP
-# import pyomo.contrib.preprocessing.plugins.induced_linearity as induced_linearity
+import os
+
 import time
 import pyomo.contrib.appsi.solvers.ipopt as ipo
 startTime = time.time()
 plt.style.use("seaborn")
 
+#%% Check if folder exists
+
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'Results/')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
+
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'Results/Exp4/')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
+   
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'Results/Exp4/figures/')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
 
 #%% Scenarios and settings
 

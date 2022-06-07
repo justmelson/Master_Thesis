@@ -23,13 +23,23 @@ import pyomo.contrib.appsi.solvers.ipopt as ipo
 
 import plotly.express as px
 import plotly.io as pio
-
+import os
 pio.renderers.default='svg'
 
 startTime = time.time()
 plt.style.use("seaborn")
+#%% Check if folder exists
 
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'Results/')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
 
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'Results/Exp2/')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
+   
 #%% Scenarios and settings
 
 

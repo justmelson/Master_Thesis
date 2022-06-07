@@ -22,9 +22,26 @@ import matplotlib.pyplot as plt
 # import pyomo.contrib.preprocessing.plugins.induced_linearity as induced_linearity
 import time
 import pyomo.contrib.appsi.solvers.ipopt as ipo
+import os
 startTime = time.time()
 plt.style.use("seaborn")
 
+#%% Check if folder exists
+
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'Results/')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
+
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'Results/Exp1/')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
+   
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'Results/Exp1/figures/')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
 
 #%% Scenarios and settings
 
