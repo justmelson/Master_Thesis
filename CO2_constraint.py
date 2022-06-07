@@ -331,7 +331,7 @@ ax.legend().set_visible(lgnd)
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
              ax.get_xticklabels() + ax.get_yticklabels()):
     item.set_fontsize(15)
-fig.savefig("CO2_val_figures/{}-dispatch.png".format(filename),transparent=True)
+fig.savefig("results/CO2_val_figures/{}-dispatch.png".format(filename),transparent=True)
 
 
 capacities = pd.DataFrame(0.,index=years,columns=techs)
@@ -354,7 +354,7 @@ ax.set_ylim([0,1500])
 fig.tight_layout()
 ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 ax.legend().set_visible(lgnd)
-fig.savefig("CO2_val_figures/{}-capacity.png".format(filename),transparent=True)
+fig.savefig("results/CO2_val_figures/{}-capacity.png".format(filename),transparent=True)
 
 build_years = pd.DataFrame(0.,index=years,columns=techs) # +storage
 for year in years:
@@ -376,7 +376,7 @@ ax.set_ylim([0,250])
 fig.tight_layout()
 ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 ax.legend().set_visible(lgnd)
-fig.savefig("CO2_val_figures/{}-new_capacity.png".format(filename),transparent=True)
+fig.savefig("results/CO2_val_figures/{}-new_capacity.png".format(filename),transparent=True)
 
 
 level_cost = pd.DataFrame(0.,index=years,columns=techs)
@@ -396,7 +396,7 @@ ax.set_ylabel("LCOE [EUR/MWh]")
 ax.set_ylim([0,130])
 ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 ax.legend().set_visible(lgnd)
-fig.savefig("CO2_val_figures/{}-lcoe.png".format(filename),transparent=True)
+fig.savefig("results/CO2_val_figures/{}-lcoe.png".format(filename),transparent=True)
 
 
 emissions = pd.DataFrame(0.,index=years,columns=techs)
@@ -415,12 +415,12 @@ for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
 ax.set_ylim([0,6000])
 ax.legend(bbox_to_anchor=(1, 1.05), ncol=1, fancybox=False, shadow=False)
 ax.legend().set_visible(lgnd)
-fig.savefig("CO2_val_figures/{}-emissions.png".format(filename),transparent=True)
+fig.savefig("results/CO2_val_figures/{}-emissions.png".format(filename),transparent=True)
 
 #%%
 #Save data
-build_years.to_pickle("build_years_one_factor.pkl")
-capacities.to_pickle("capacities_one_factor.pkl")
+build_years.to_pickle("results/CO2_val_figures/build_years_one_factor.pkl")
+capacities.to_pickle("results/CO2_val_figures/capacities_one_factor.pkl")
 
 
 # build_years.to_pickle("build_years_multi.pkl")

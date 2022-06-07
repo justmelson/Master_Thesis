@@ -33,14 +33,14 @@ pio.renderers.default='svg'
 
 years = [2020,2025,2030,2035,2040,2045,2050]
 
-techs_file          = "techs.pkl"
-fossil_techs_file   = "fossil_techs.pkl"
-renewables_file     = "renewables.pkl"
-wind_file           = "wind.pkl"
-colors_file         = "colors.pkl"
-storage_file        = "storage.pkl"
-color_storage_file  = "color_storage.pkl"
-CC_file             = "CC.pkl"
+techs_file          = "import_data/techs.pkl"
+fossil_techs_file   = "import_data/fossil_techs.pkl"
+renewables_file     = "import_data/renewables.pkl"
+wind_file           = "import_data/wind.pkl"
+colors_file         = "import_data/colors.pkl"
+storage_file        = "import_data/storage.pkl"
+color_storage_file  = "import_data/color_storage.pkl"
+CC_file             = "import_data/CC.pkl"
 
 files = [techs_file,fossil_techs_file,renewables_file,wind_file,colors_file,storage_file,color_storage_file,CC_file]
 lists = ["techs","fossil_techs","renewables","wind","colors","storage","color_storage","CC_techs"]

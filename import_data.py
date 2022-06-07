@@ -242,9 +242,9 @@ cf_offshore3h = np.mean(cf_offshore.reshape(-1,res),axis=1)
 cf_offshore3h = pd.DataFrame(cf_offshore3h)
 
 
-cf_solar3h.to_pickle("cf_solar3h.pkl")
-cf_onshore3h.to_pickle("cf_onshore3h.pkl")
-cf_offshore3h.to_pickle("cf_offshore3h.pkl")
+cf_solar3h.to_pickle("import_data/cf_solar3h.pkl")
+cf_onshore3h.to_pickle("import_data/cf_onshore3h.pkl")
+cf_offshore3h.to_pickle("import_data/cf_offshore3h.pkl")
 
 
 cf_solar_raw = pd.read_excel('data/capacityfactor_4days.xlsx','pv',index_col=0)
@@ -286,9 +286,9 @@ cf_offshore3h = pd.DataFrame(cf_offshore3h)
 # cf_offshore3h = pd.DataFrame(cf_offshore3h)
 
 
-cf_solar3h.to_pickle("cf_solar3h4d.pkl")
-cf_onshore3h.to_pickle("cf_onshore3h4d.pkl")
-cf_offshore3h.to_pickle("cf_offshore3h4d.pkl")
+cf_solar3h.to_pickle("import_data/cf_solar3h4d.pkl")
+cf_onshore3h.to_pickle("import_data/cf_onshore3h4d.pkl")
+cf_offshore3h.to_pickle("import_data/cf_offshore3h4d.pkl")
 
 
 cf_solar_raw = pd.read_excel('data/capacityfactor_2days.xlsx','pv',index_col=0)
@@ -312,9 +312,9 @@ cf_offshore3h = pd.DataFrame(cf_offshore3h)
 
 
 
-cf_solar3h.to_pickle("cf_solar3h2d.pkl")
-cf_onshore3h.to_pickle("cf_onshore3h2d.pkl")
-cf_offshore3h.to_pickle("cf_offshore3h2d.pkl")
+cf_solar3h.to_pickle("import_data/cf_solar3h2d.pkl")
+cf_onshore3h.to_pickle("import_data/cf_onshore3h2d.pkl")
+cf_offshore3h.to_pickle("import_data/cf_offshore3h2d.pkl")
 
 #%% Demand
 week_summer = pd.date_range('2015-06-19T00:00:00Z','2015-06-21T23:00:00Z',freq='H')
@@ -375,39 +375,39 @@ for year in years3:
 
 #%% Saving dataframes and lists
 
-parameters.to_pickle("parameters.pkl")
-store_param.to_pickle("store_param.pkl")
-CC_param.to_pickle("CC_param.pkl")
+parameters.to_pickle("import_data/parameters.pkl")
+store_param.to_pickle("import_data/store_param.pkl")
+CC_param.to_pickle("import_data/CC_param.pkl")
 # CF_solar_one.to_pickle("CF_solar_one.pkl")
 # CF_onwind_one.to_pickle("CF_onwind_one.pkl")
 # CF_offwind_one.to_pickle("CF_offwind_one.pkl")
-df_elec.to_pickle("df_elec.pkl")
+df_elec.to_pickle("import_data/df_elec.pkl")
 # demand2w3h.to_pickle("demand2w3h.pkl")
-demand2w3h.to_pickle("demand6d3h.pkl")
+demand2w3h.to_pickle("import_data/demand6d3h.pkl")
 
 
-a_file = open("demand_elec.pkl", "wb")
+a_file = open("import_data/demand_elec.pkl", "wb")
 pickle.dump(demand_elec, a_file)
 a_file.close()
 
-a_file = open("demand_elec5y.pkl", "wb")
+a_file = open("import_data/demand_elec5y.pkl", "wb")
 pickle.dump(demand_elec5y, a_file)
 a_file.close()
 
-a_file = open("demand_elec3y.pkl", "wb")
+a_file = open("import_data/demand_elec3y.pkl", "wb")
 pickle.dump(demand_elec3y, a_file)
 a_file.close()
 
 
 
-CC_file             = "CC.pkl"
-techs_file          = "techs.pkl"
-fossil_techs_file   = "fossil_techs.pkl"
-renewables_file     = "renewables.pkl"
-wind_file           = "wind.pkl"
-colors_file         = "colors.pkl"
-storage_file        = "storage.pkl"
-color_storage_file  = "color_storage.pkl"
+CC_file             = "import_data/CC.pkl"
+techs_file          = "import_data/techs.pkl"
+fossil_techs_file   = "import_data/fossil_techs.pkl"
+renewables_file     = "import_data/renewables.pkl"
+wind_file           = "import_data/wind.pkl"
+colors_file         = "import_data/colors.pkl"
+storage_file        = "import_data/storage.pkl"
+color_storage_file  = "import_data/color_storage.pkl"
 
 files = [techs_file,fossil_techs_file,renewables_file,wind_file,colors_file,storage_file,color_storage_file,CC_file]
 lists = [techs,fossil_techs,renewables,wind,colors,storage,color_storage,CC_techs]

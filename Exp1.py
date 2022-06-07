@@ -67,11 +67,11 @@ hours = list(range(32))
 dty = 365/(len(hours)/8) # Number of days modeled op to 365 days
 
 
-parameters  = pd.read_pickle("parameters.pkl")
-store_param = pd.read_pickle("store_param.pkl")
-CC_param    = pd.read_pickle("CC_param.pkl")
+parameters  = pd.read_pickle("import_data/parameters.pkl")
+store_param = pd.read_pickle("import_data/store_param.pkl")
+CC_param    = pd.read_pickle("import_data/CC_param.pkl")
 
-a_file = open("demand_elec5y.pkl", "rb")
+a_file = open("import_data/demand_elec5y.pkl", "rb")
 demand = pickle.load(a_file) #GWh
 
 
@@ -85,23 +85,23 @@ demand = pickle.load(a_file) #GWh
 # Cf_offshore = pd.read_pickle("Cf_offshore.pkl")
 
 
-Cf_solar      = pd.read_pickle("cf_solar3h4d.pkl")
-Cf_onshore    = pd.read_pickle("cf_onshore3h4d.pkl")
-Cf_offshore   = pd.read_pickle("cf_offshore3h4d.pkl")
+Cf_solar      = pd.read_pickle("import_data/cf_solar3h4d.pkl")
+Cf_onshore    = pd.read_pickle("import_data/cf_onshore3h4d.pkl")
+Cf_offshore   = pd.read_pickle("import_data/cf_offshore3h4d.pkl")
 # demand6d3h      = pd.read_pickle("demand6d3h.pkl")
 # demand6d3h.reset_index()
 
 
 
 
-techs_file          = "techs.pkl"
-fossil_techs_file   = "fossil_techs.pkl"
-renewables_file     = "renewables.pkl"
-wind_file           = "wind.pkl"
-colors_file         = "colors.pkl"
-storage_file        = "storage.pkl"
-color_storage_file  = "color_storage.pkl"
-CC_file             = "CC.pkl"
+techs_file          = "import_data/techs.pkl"
+fossil_techs_file   = "import_data/fossil_techs.pkl"
+renewables_file     = "import_data/renewables.pkl"
+wind_file           = "import_data/wind.pkl"
+colors_file         = "import_data/colors.pkl"
+storage_file        = "import_data/storage.pkl"
+color_storage_file  = "import_data/color_storage.pkl"
+CC_file             = "import_data/CC.pkl"
 
 files = [techs_file,fossil_techs_file,renewables_file,
          wind_file,colors_file,storage_file,color_storage_file,CC_file]

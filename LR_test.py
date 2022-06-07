@@ -49,18 +49,18 @@ lgnd = True
 r = 0.01 # discount rate
 
 
-parameters = pd.read_pickle("parameters.pkl")
-store_param = pd.read_pickle("store_param.pkl")
-demand = pd.DataFrame(columns= ["demand"])
+parameters = pd.read_pickle("import_data/parameters.pkl")
+store_param = pd.read_pickle("import_data/store_param.pkl")
+demand = pd.DataFrame(columns= ["import_data/demand"])
 
 
-techs_file = "techs.pkl"
-fossil_techs_file = "fossil_techs.pkl"
-renewables_file = "renewables.pkl"
-wind_file = "wind.pkl"
-colors_file = "colors.pkl"
-storage_file = "storage.pkl"
-color_storage_file = "color_storage.pkl"
+techs_file          = "import_data/techs.pkl"
+fossil_techs_file   = "import_data/fossil_techs.pkl"
+renewables_file     = "import_data/renewables.pkl"
+wind_file           = "import_data/wind.pkl"
+colors_file         = "import_data/colors.pkl"
+storage_file        = "import_data/storage.pkl"
+color_storage_file  = "import_data/color_storage.pkl"
 
 files = [techs_file,fossil_techs_file,renewables_file,wind_file,colors_file,storage_file,color_storage_file]
 lists = ["techs","fossil_techs","renewables","wind","colors","storage","color_storage"]
