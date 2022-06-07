@@ -12,23 +12,18 @@ Created on Sat Apr 16 10:36:01 2022
 import math 
 from pyomo.environ import ConcreteModel, Var, Objective, NonNegativeReals, Constraint
 from pyomo.environ import *
-from pyomo.contrib.sensitivity_toolbox.sens import sensitivity_calculation
 from pyomo.opt import SolverFactory
 import pandas as pd
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
-# from pyomo.contrib.pynumero.interfaces.pyomo_nlp import PyomoNLP
-# import pyomo.contrib.preprocessing.plugins.induced_linearity as induced_linearity
+
 import time
 import pyomo.contrib.appsi.solvers.ipopt as ipo
 
 import plotly.express as px
-import plotly.graph_objects as go
 import plotly.io as pio
-# import seaborn as sns
-# import kaleido
-# from IPython.display import Image
+
 pio.renderers.default='svg'
 
 startTime = time.time()
@@ -84,21 +79,10 @@ PV_learning = [0.1,0.15,0.20,0.25,0.3,0.35,0.4,0.45]
 iterations = [0,1,2,3,4,5,6,7]
 
 
-# CF_solar_one    = pd.read_pickle("CF_solar_one.pkl")
-# CF_onwind_one   = pd.read_pickle("CF_onwind_one.pkl")
-# CF_offwind_one  = pd.read_pickle("CF_offwind_one.pkl")
-
-# Cf_solar    = pd.read_pickle("Cf_solar.pkl")
-# Cf_onshore  = pd.read_pickle("Cf_onshore.pkl")
-# Cf_offshore = pd.read_pickle("Cf_offshore.pkl")
-
 
 Cf_solar      = pd.read_pickle("import_data/cf_solar3h4d.pkl")
 Cf_onshore    = pd.read_pickle("import_data/cf_onshore3h4d.pkl")
 Cf_offshore   = pd.read_pickle("import_data/cf_offshore3h4d.pkl")
-# demand6d3h      = pd.read_pickle("demand6d3h.pkl")
-# demand6d3h.reset_index()
-
 
 
 

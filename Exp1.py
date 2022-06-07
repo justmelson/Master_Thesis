@@ -34,7 +34,6 @@ plt.style.use("seaborn")
 # scenario = "co2_constraint-LR" 
 scenario = "no_co2-LR"
 
-# learning_scenarios = ["highLR","nomLR","lowLR"]
 
 # learning rate assumptions
 # learning_scenario = "highLR"
@@ -60,13 +59,15 @@ hour_interval = 3
 # legend on/off when plotting
 lgnd = True
 
-r = 0.01 # discount rate
+# Discount rate
+r = 0.01
 
+# Hours for load balancing
 hours = list(range(32))
- 
 dty = 365/(len(hours)/8) # Number of days modeled op to 365 days
 
 
+# Importing data
 parameters  = pd.read_pickle("import_data/parameters.pkl")
 store_param = pd.read_pickle("import_data/store_param.pkl")
 CC_param    = pd.read_pickle("import_data/CC_param.pkl")
@@ -74,22 +75,9 @@ CC_param    = pd.read_pickle("import_data/CC_param.pkl")
 a_file = open("import_data/demand_elec5y.pkl", "rb")
 demand = pickle.load(a_file) #GWh
 
-
-
-# CF_solar_one    = pd.read_pickle("CF_solar_one.pkl")
-# CF_onwind_one   = pd.read_pickle("CF_onwind_one.pkl")
-# CF_offwind_one  = pd.read_pickle("CF_offwind_one.pkl")
-
-# Cf_solar    = pd.read_pickle("Cf_solar.pkl")
-# Cf_onshore  = pd.read_pickle("Cf_onshore.pkl")
-# Cf_offshore = pd.read_pickle("Cf_offshore.pkl")
-
-
 Cf_solar      = pd.read_pickle("import_data/cf_solar3h4d.pkl")
 Cf_onshore    = pd.read_pickle("import_data/cf_onshore3h4d.pkl")
 Cf_offshore   = pd.read_pickle("import_data/cf_offshore3h4d.pkl")
-# demand6d3h      = pd.read_pickle("demand6d3h.pkl")
-# demand6d3h.reset_index()
 
 
 
@@ -148,16 +136,11 @@ else:
     print("Brownfield approach")
 
 
-# store_param.at["current annuity","battery_store"] += store_param.at["current annuity","battery_inverter"]
 
 for tech in techs:
     parameters.at["specific emissions",tech] *= 1e-6 # convert to MtCO2/MWh
 
 #%% Updating learning rates and CO2 budget
-
-#Currently installed capacities in GW is used to assume current demand
-
-
 
 if "no_LR" in scenario:
     parameters.loc["learning rate"]     = 0
@@ -197,13 +180,12 @@ else:
 
 
     
-#%% One node model
+#%% One node model description
 model = ConcreteModel()
 model.generators            = Var(techs, years, within=NonNegativeReals) # bounds=(0.0,1000)
 model.generators_dispatch   = Var(techs, years, hours, within=NonNegativeReals)
 model.generators_built      = Var(techs, years, within=NonNegativeReals)
 model.fixed_costs           = Var(techs, years, within=NonNegativeReals) #EUR/GW/a
-# model.capital_costs         = Var(techs, years, within=NonNegativeReals) #Eur/GW
 
 model.SOC                   = Var(storage_techs,years, hours,initialize=0, within=NonNegativeReals)
 model.storage               = Var(storage_techs, years, initialize=0, within=NonNegativeReals)
@@ -211,7 +193,6 @@ model.storage_built         = Var(storage_techs, years, initialize=0, within=Non
 model.fixed_costs_storage   = Var(storage_techs, years, initialize=0, within=NonNegativeReals)
 model.storage_charge        = Var(storage_techs, years, hours, initialize=0, within=NonNegativeReals)
 model.storage_discharge     = Var(storage_techs, years, hours, initialize=0, within=NonNegativeReals)
-# model.capital_costs_storage = Var(storage_techs, years, within=NonNegativeReals) #Eur/GW
 
 
 
@@ -361,13 +342,6 @@ def fixed_cost_constraint_storage(model,tech,year):
         return model.fixed_costs_storage[tech,year] == store_param.at["current annuity",tech] * (1+sum(model.storage_built[tech,yeart] for yeart in years if yeart < year)*greenfield_df[tech])**(-store_param.at["learning parameter",tech]) #EUR/GW
 model.fixed_cost_constraint_storage = Constraint(storage_techs,years, rule=fixed_cost_constraint_storage)
 
-# def capital_cost_constraint_storage(model,tech,year):
-#     if store_param.at["learning parameter",tech] == 0:
-#         return model.capital_costs_storage[tech,year] == store_param.at["current capital cost",tech]*1000 #EUR/GW
-#     else:
-#         return model.capital_costs_storage[tech,year] == store_param.at["current capital cost",tech]*1000 * (1+sum(model.storage_built[tech,yeart] for yeart in years if yeart < year)*greenfield_df[tech])**(-store_param.at["learning parameter",tech]) #EUR/GW
-# model.capital_cost_constraint_storage = Constraint(storage_techs,years, rule=capital_cost_constraint_storage)
-
 
 #%% Installed capacity constraints
 def generator_constraint(model,tech,year,hour):
@@ -398,13 +372,6 @@ def fixed_cost_constraint(model,tech,year):
     else:
         return model.fixed_costs[tech,year] == parameters.at["current annuity",tech] * (1+sum(model.generators_built[tech,yeart] for yeart in years if yeart < year)*greenfield_df[tech])**(-parameters.at["learning parameter",tech]) #EUR/GW
 model.fixed_cost_constraint = Constraint(techs, years, rule=fixed_cost_constraint)
-
-# def capital_cost_constraint(model,tech,year):
-#     if parameters.at["learning parameter",tech] == 0:
-#         return model.capital_costs[tech,year] == parameters.at["current capital cost",tech]*1000 #EUR/GW
-#     else:
-#         return model.capital_costs[tech,year] == parameters.at["current capital cost",tech]*1000 * (1+sum(model.generators_built[tech,yeart] for yeart in years if yeart < year)*greenfield_df[tech])**(-parameters.at["learning parameter",tech]) #EUR/GW
-# model.capital_cost_constraint = Constraint(techs, years, rule=capital_cost_constraint)
 
 
 

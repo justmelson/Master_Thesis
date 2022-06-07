@@ -14,12 +14,14 @@ import pandas as pd
 from sewar.full_ref import uqi,rmse
 import matplotlib.pyplot as plt
 from matplotlib import image
+import matplotlib
 import tsam.timeseriesaggregation as tsam
 # matplotlib inline
 import numpy as np
 import matplotlib.cm as cm
 ct = "DEU"
 
+                           
 def plotTS(data, periodlength, vmin, vmax):
     fig, axes = plt.subplots(figsize = [12, 4], dpi = 400, nrows = 1, ncols = 1)
     stacked, timeindex = tsam.unstackToPeriods(copy.deepcopy(data), periodlength)
@@ -31,6 +33,11 @@ def plotTS(data, periodlength, vmin, vmax):
     fig.subplots_adjust(right = 1.2)
     cbar=plt.colorbar(cax)    
     cbar.set_label('capacity factor')
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/solar1h.pdf",transparent=True,bbox_inches='tight')
+
     
 def plotTS3h(data, periodlength, vmin, vmax):
     fig, axes = plt.subplots(figsize = [12, 4], dpi = 400, nrows = 1, ncols = 1)
@@ -44,7 +51,10 @@ def plotTS3h(data, periodlength, vmin, vmax):
     cbar=plt.colorbar(cax)    
     cbar.set_label('capacity factor')
     plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
-
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/solar3h.pdf",transparent=True,bbox_inches='tight')
 
 def plotTSonwind(data, periodlength, vmin, vmax):
     fig, axes = plt.subplots(figsize = [12, 4], dpi = 400, nrows = 1, ncols = 1)
@@ -57,7 +67,11 @@ def plotTSonwind(data, periodlength, vmin, vmax):
     fig.subplots_adjust(right = 1.2)
     cbar=plt.colorbar(cax)    
     cbar.set_label('capacity factor')
-    
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/onshore1h.pdf",transparent=True,bbox_inches='tight')
+
     
 def plotTSonwind3h(data, periodlength, vmin, vmax):
     fig, axes = plt.subplots(figsize = [12, 4], dpi = 400, nrows = 1, ncols = 1)
@@ -71,6 +85,11 @@ def plotTSonwind3h(data, periodlength, vmin, vmax):
     cbar=plt.colorbar(cax)    
     cbar.set_label('capacity factor')
     plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/onshore1h.pdf",transparent=True,bbox_inches='tight')
+
 
     
 def plotTSoffwind(data, periodlength, vmin, vmax):
@@ -84,6 +103,11 @@ def plotTSoffwind(data, periodlength, vmin, vmax):
     fig.subplots_adjust(right = 1.2)
     cbar=plt.colorbar(cax)    
     cbar.set_label('capacity factor')
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/offshore1h.pdf",transparent=True,bbox_inches='tight')
+
 
     
 def plotTSoffwind3h(data, periodlength, vmin, vmax):
@@ -98,10 +122,15 @@ def plotTSoffwind3h(data, periodlength, vmin, vmax):
     cbar=plt.colorbar(cax)    
     cbar.set_label('capacity factor')
     plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/offshore3h.pdf",transparent=True,bbox_inches='tight')
+
     
 #%% Manual picking of time series
-ct = "DEU" 
-res = 3
+ct = "DEU"  # country
+res =3 # hourly resolution
 
 
 cf_solar_raw = pd.read_excel('data/capacityfactor_twoweeks.xlsx','pv',index_col=0)
@@ -147,7 +176,10 @@ def plotTSoffwind3h4d(data, periodlength, vmin, vmax):
     cbar.set_label('capacity factor')
     plt.xticks(ticks=[-0.5,0.5,1.5,2.5],labels=['1','2','3','4'])
     plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
-    plt.savefig('Results/CF_series/CF_offwind_4d3h.png', dpi=400,bbox_inches='tight',transparent=True)
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/CF_offwind_4d3h.pdf",transparent=True,bbox_inches='tight')
 
 def plotTS3h4d(data, periodlength, vmin, vmax):
     fig, axes = plt.subplots(figsize = [6, 4], dpi = 400, nrows = 1, ncols = 1)
@@ -162,7 +194,10 @@ def plotTS3h4d(data, periodlength, vmin, vmax):
     cbar.set_label('capacity factor')
     plt.xticks(ticks=[-0.5,0.5,1.5,2.5],labels=['1','2','3','4'])
     plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
-    plt.savefig('Results/CF_series/CF_solar_4d3h.png', dpi=400,bbox_inches='tight',transparent=True)
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/CF_solar_4d3h.pdf",transparent=True,bbox_inches='tight')
 
     
     
@@ -179,7 +214,10 @@ def plotTSonwind3h4d(data, periodlength, vmin, vmax):
     cbar.set_label('capacity factor')
     plt.xticks(ticks=[-0.5,0.5,1.5,2.5],labels=['1','2','3','4'])
     plt.yticks(ticks=[-0.5,(24/res)/2-0.5,24/res-0.5],labels=['0','12','24'])
-    plt.savefig('Results/CF_series/CF_onwind_4d3h.png', dpi=400,bbox_inches='tight',transparent=True)
+    for item in ([axes.title, axes.xaxis.label, axes.yaxis.label] +
+                 axes.get_xticklabels() + axes.get_yticklabels()):
+        item.set_fontsize(15)
+    fig.savefig("results/Capacity_factors_plots/CF_onwind_4d3h.pdf",transparent=True,bbox_inches='tight')
 
 
 cf_solar_raw = pd.read_excel('data/capacityfactor_4days.xlsx','pv',index_col=0)

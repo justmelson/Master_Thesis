@@ -37,7 +37,7 @@ floor = 'direct_air' #'_revCC01LR15' # revCC is revised CC cost
 filename = "Exp5_"+str(r)#+'revCC'
 
 # CO2 budget for 2050 global warming goals
-co2_until_2050 = 10500000 # 10.5 gigaton CO2
+co2_until_2050 = 10500000 # ktCO2, equivalent to 10.5 gigaton CO2
 
 # co2_budget = {2020:3000,2025:3000,2030:2,2035:1500,2040:1000,2045:0,2050:0}
 # co2_budget = {2020:3000,2025:3000,2030:2000,2035:1500,2040:1000,2045:0,2050:0}

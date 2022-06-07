@@ -21,15 +21,14 @@ import pickle
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-# from pyomo.contrib.pynumero.interfaces.pyomo_nlp import PyomoNLP
-# import pyomo.contrib.preprocessing.plugins.induced_linearity as induced_linearity
 import time
 import pyomo.contrib.appsi.solvers.ipopt as ipo
 startTime = time.time()
 plt.style.use("seaborn")
-
+filename = "exp3_"
 
 #%% Scenarios and settings
+# Set the desired model scenario
 
 
 # scenario = "no_co2-no_LR"
@@ -44,7 +43,7 @@ scenario = "co2_constraint-LR"
 # learning_scenario = "lowLR"
 learning_scenario = "nomLR"
 
-filename = "exp3_"
+
 
 # CO2 budget for 2050 global warming goals
 co2_until_2050 = 10500 # MtCO2 (10.5 gigaton CO2)
@@ -54,10 +53,6 @@ co2_budget = {2020:3000,2025:3000,2030:2000,2035:1500,2040:1000,2045:0,2050:0}
 # Greenfield scenario 
 Greenfield = True
 
-# Years
-years = [2020,2025,2030,2035,2040,2045,2050]
-interval = years[1]-years[0]
-hour_interval = 3
 
 
 
@@ -67,11 +62,15 @@ lgnd = True
 
 r = 0.01 # discount rate
 
+# Model years and hours
+years = [2020,2025,2030,2035,2040,2045,2050]
+interval = years[1]-years[0]
+hour_interval = 3
 hours = list(range(32))
- 
 dty = 365/(len(hours)/8) # Number of days modeled op to 365 days
 
 
+# Importing data
 parameters  = pd.read_pickle("import_data/parameters.pkl")
 store_param = pd.read_pickle("import_data/store_param.pkl")
 CC_param    = pd.read_pickle("import_data/CC_param.pkl")
@@ -81,20 +80,10 @@ demand = pickle.load(a_file) #GWh
 
 
 
-# CF_solar_one    = pd.read_pickle("CF_solar_one.pkl")
-# CF_onwind_one   = pd.read_pickle("CF_onwind_one.pkl")
-# CF_offwind_one  = pd.read_pickle("CF_offwind_one.pkl")
-
-# Cf_solar    = pd.read_pickle("Cf_solar.pkl")
-# Cf_onshore  = pd.read_pickle("Cf_onshore.pkl")
-# Cf_offshore = pd.read_pickle("Cf_offshore.pkl")
-
 
 Cf_solar      = pd.read_pickle("import_data/cf_solar3h4d.pkl")
 Cf_onshore    = pd.read_pickle("import_data/cf_onshore3h4d.pkl")
 Cf_offshore   = pd.read_pickle("import_data/cf_offshore3h4d.pkl")
-# demand6d3h      = pd.read_pickle("demand6d3h.pkl")
-# demand6d3h.reset_index()
 
 
 
@@ -153,7 +142,6 @@ else:
     print("Brownfield approach")
 
 
-# store_param.at["current annuity","battery_store"] += store_param.at["current annuity","battery_inverter"]
 
 for tech in techs:
     parameters.at["specific emissions",tech] *= 1e-6 # convert to MtCO2/MWh

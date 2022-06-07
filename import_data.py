@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb 15 13:54:53 2022
+Importing data for nonlinear endogenous learning model.
+The script exports 
 
 @author: frederikmelson
 """
+
 import pandas as pd
 import requests
 import io
 from annuity_fun import annuity
 import pickle
 import numpy as np
+import os 
+
+#%% Check if folder exists
+
+current_directory = os.getcwd()
+final_directory = os.path.join(current_directory, r'import_data')
+if not os.path.exists(final_directory):
+   os.makedirs(final_directory)
 
 #%% Importing data
 
